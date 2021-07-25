@@ -58,6 +58,7 @@ dependencies {
     //Navigation dependencies
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.0-rc1'
+    implementation 'com.google.firebase:firebase-auth:20.0.1'
     kapt "androidx.lifecycle:lifecycle-compiler:$archLifecycleVersion"
     implementation "androidx.lifecycle:lifecycle-extensions:$archLifecycleVersion"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$archLifecycleVersion"
@@ -123,4 +124,7 @@ dependencies {
     implementation "com.google.android.gms:play-services-maps:$playServicesVersion"
 
 
+    //Firebase
+    implementation platform('com.google.firebase:firebase-bom:28.3.0')
+    implementation 'com.firebaseui:firebase-ui-auth:5.0.0'
 }
