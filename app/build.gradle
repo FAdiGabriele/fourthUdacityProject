@@ -5,6 +5,17 @@ apply plugin: "androidx.navigation.safeargs.kotlin"
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'com.google.gms.google-services'
 
+
+/*
+    Proprieties is used for access to the file called "local.properties"
+
+    It is a particular file that save the local setting and usually it is a file
+     inserted into .gitignore so it is not pushed to the repository
+ */
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+def googleMapApiKey = properties.getProperty('MAPS_API_KEY')
+
 android {
     compileSdkVersion rootProject.compileSdkVersion
     buildToolsVersion "29.0.2"
@@ -16,6 +27,10 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
+
+        //This is the way to communicate a value between local.properties and Manifest
+        manifestPlaceholders = [ myApiMaps: googleMapApiKey ]
     }
     buildTypes {
         release {
@@ -30,6 +45,11 @@ android {
         includeAndroidResources = true
         returnDefaultValues = true
     }
+    compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
+    }
+
 
     //dataBinding {
     //    enabled = true
