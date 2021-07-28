@@ -22,25 +22,12 @@ import com.udacity.project4.utils.Constants.FIREBASE_TAG
 class AuthenticationActivity : AppCompatActivity() {
 
     lateinit var binding : ActivityAuthenticationBinding
-    private val providers = arrayListOf(
-        AuthUI.IdpConfig.EmailBuilder().build(), AuthUI.IdpConfig.GoogleBuilder().build()
-    )
-    //todo divide this activity in two fragment login/registration
+    //todo: Manage registration
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAuthenticationBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        binding.buttonLogin.setOnClickListener {
-            // TODO: a bonus is to customize the sign in flow to look nice using :
-            //https://github.com/firebase/FirebaseUI-Android/blob/master/auth/README.md#custom-layout
-            startActivityForResult(
-                AuthUI.getInstance().createSignInIntentBuilder().setAvailableProviders(
-                    providers
-                ).build(), AUTENTICATION_CODE)
-        }
-
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
