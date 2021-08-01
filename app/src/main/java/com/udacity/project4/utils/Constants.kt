@@ -20,6 +20,7 @@ object Constants {
     const val REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSION_RESULT_CODE = 33
     const val REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE = 34
     const val REQUEST_TURN_DEVICE_LOCATION_ON = 29
+    const val REQUEST_LOCATION_PERMISSION = 1
 
     //geofence constants
     const val ACTION_GEOFENCE_EVENT = "RemindersActivity.project4.action.ACTION_GEOFENCE_EVENT"

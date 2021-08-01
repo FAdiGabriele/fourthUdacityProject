@@ -12,7 +12,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-class RepositoryTest {
+class DefaultReminderRepositoryTest {
 
     //fake data
     private val reminderDTO0 = ReminderDTO("titolo0", "descrizione0", "luogo0", 1.0, 1.0, "0")

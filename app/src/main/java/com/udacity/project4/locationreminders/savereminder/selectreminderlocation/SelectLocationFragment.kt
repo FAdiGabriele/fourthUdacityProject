@@ -10,6 +10,7 @@ import android.content.res.Resources
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import com.google.android.gms.common.api.ApiException
@@ -26,18 +27,23 @@ import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentSelectLocationBinding
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
+import com.udacity.project4.utils.Constants
+import com.udacity.project4.utils.Constants.LOCATION_TAG
+import com.udacity.project4.utils.Constants.REQUEST_LOCATION_PERMISSION
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import org.koin.android.ext.android.inject
 
-class SelectLocationFragment : BaseFragment() {
+class SelectLocationFragment : BaseFragment() , OnMapReadyCallback{
 
     //Use Koin to get the view model of the SaveReminder
     override val _viewModel: SaveReminderViewModel by inject()
     private lateinit var binding: FragmentSelectLocationBinding
 
+    private lateinit var map: GoogleMap
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding =
             DataBindingUtil.inflate(inflater, R.layout.fragment_select_location, container, false)
 
@@ -46,6 +52,10 @@ class SelectLocationFragment : BaseFragment() {
 
         setHasOptionsMenu(true)
         setDisplayHomeAsUpEnabled(true)
+
+
+        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+        mapFragment.getMapAsync(this)
 
 //        TODO: add the map setup implementation
 //        TODO: zoom to the user location after taking his permission
@@ -71,21 +81,51 @@ class SelectLocationFragment : BaseFragment() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
-        // TODO: Change the map type based on the user's selection.
+        // Change the map type based on the user's selection.
         R.id.normal_map -> {
+            map.mapType = GoogleMap.MAP_TYPE_NORMAL
             true
         }
         R.id.hybrid_map -> {
+            map.mapType = GoogleMap.MAP_TYPE_HYBRID
             true
         }
         R.id.satellite_map -> {
+            map.mapType = GoogleMap.MAP_TYPE_SATELLITE
             true
         }
         R.id.terrain_map -> {
+            map.mapType = GoogleMap.MAP_TYPE_TERRAIN
             true
         }
         else -> super.onOptionsItemSelected(item)
     }
+
+    override fun onMapReady(googleMap: GoogleMap) {
+        map = googleMap
+        setMapStyle(map)
+//        TODO("Not yet implemented")
+    }
+
+    private fun setMapStyle(map: GoogleMap) {
+//        try {
+//            // Customize the styling of the base map using a JSON object defined
+//            // in a raw resource file.
+//            val success = map.setMapStyle(
+//                    MapStyleOptions.loadRawResourceStyle(
+//                            requireActivity(),
+//                            R.raw.map_style
+//                    )
+//            )
+//        if (!success) {
+//            Log.e(LOCATION_TAG, "Style parsing failed.")
+//        }
+//          } catch (e: Resources.NotFoundException) {
+//       Log.e(LOCATION_TAG, "Can't find style. Error: ", e)
+//   }
+    }
+
+
 
 
 }
