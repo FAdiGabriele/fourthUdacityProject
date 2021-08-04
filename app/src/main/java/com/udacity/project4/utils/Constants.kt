@@ -26,4 +26,6 @@ object Constants {
 
     const val GEOFENCE_RADIUS_IN_METERS = 10f
     const val EXTRA_GEOFENCE_INDEX = "GEOFENCE_INDEX"
+    const val NOTIFICATION_ID = 33
+    const val CHANNEL_ID = "GeofenceChannel"
 }

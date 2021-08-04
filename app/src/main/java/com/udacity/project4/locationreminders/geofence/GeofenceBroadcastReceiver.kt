@@ -8,8 +8,12 @@ import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofenceStatusCodes
 import com.google.android.gms.location.GeofencingEvent
 import com.udacity.project4.R
+import com.udacity.project4.locationreminders.data.local.LocalDB
+import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import com.udacity.project4.utils.Constants
 import com.udacity.project4.utils.Constants.ACTION_GEOFENCE_EVENT
+import com.udacity.project4.utils.sendNotification
+import kotlinx.coroutines.*
 
 /**
  * Triggered by the Geofence.  Since we can have many Geofences at once, we pull the request
@@ -43,26 +47,38 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
                         return
                     }
                 }
+                CoroutineScope(Dispatchers.IO).launch {
+                    val foundReminder = LocalDB.createRemindersDao(context).getReminderById(fenceId)
+
+                    if (foundReminder == null) {
+                        Log.e(Constants.TAG, "Unknown Geofence: Abort Mission")
+                        return@launch
+                    }
+
+                    val foundItem = ReminderDataItem.getFromReminderDTO(foundReminder)
+
+//                    val notificationManager = ContextCompat.getSystemService(
+//                        context,
+//                        NotificationManager::class.java
+//                    ) as NotificationManager
+
+
 //                val foundIndex = Constants.LANDMARK_DATA.indexOfFirst {
 //                    it.id == fenceId
 //                }
 //                if ( -1 == foundIndex ) {
-//                    Log.e(Constants.TAG, "Unknown Geofence: Abort Mission")
-//                    return
-//                }
+//
 //                val notificationManager = ContextCompat.getSystemService(
 //                    context,
 //                    NotificationManager::class.java
 //                ) as NotificationManager
 
-
-                //todo : Adapt it to your object
-//                notificationManager.sendNotification(
-//                    context, foundIndex
-//                )
+                    sendNotification(
+                        context, foundItem
+                    )
+                }
             }
         }
-
     }
 
     /**
@@ -72,15 +88,17 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
         val resources = context.resources
         return when (errorCode) {
             GeofenceStatusCodes.GEOFENCE_NOT_AVAILABLE -> resources.getString(
-                    R.string.geofence_not_available
+                R.string.geofence_not_available
             )
             GeofenceStatusCodes.GEOFENCE_TOO_MANY_GEOFENCES -> resources.getString(
-                    R.string.geofence_too_many_geofences
+                R.string.geofence_too_many_geofences
             )
             GeofenceStatusCodes.GEOFENCE_TOO_MANY_PENDING_INTENTS -> resources.getString(
-                    R.string.geofence_too_many_pending_intents
+                R.string.geofence_too_many_pending_intents
             )
             else -> resources.getString(R.string.geofence_unknown_error)
         }
     }
+
 }
+

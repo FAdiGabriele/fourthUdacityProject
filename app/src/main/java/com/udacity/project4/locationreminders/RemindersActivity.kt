@@ -3,6 +3,7 @@ package com.udacity.project4.locationreminders
 import android.Manifest
 import android.annotation.TargetApi
 import android.app.Activity
+import android.app.Application
 import android.app.Dialog
 import android.app.PendingIntent
 import android.content.Intent
@@ -122,12 +123,12 @@ class RemindersActivity : AppCompatActivity() {
                     Log.d(Constants.LOCATION_TAG, "Error getting location settings resolution: " + sendEx.message)
                 }
             } else {
-//                Snackbar.make(
-//                    binding.root,
-//                    R.string.location_required_error, Snackbar.LENGTH_INDEFINITE
-//                ).setAction(android.R.string.ok) {
-//                    askToTurnOnLocation()
-//                }.show()
+                Snackbar.make(
+                    binding.root,
+                    R.string.location_required_error, Snackbar.LENGTH_INDEFINITE
+                ).setAction(android.R.string.ok) {
+                    askToTurnOnLocation()
+                }.show()
             }
         }
         locationSettingsResponseTask.addOnSuccessListener {
@@ -170,7 +171,7 @@ class RemindersActivity : AppCompatActivity() {
         }
         Log.d(Constants.LOCATION_TAG, "Request foreground only location permission")
 
-        val dialog = Dialog(this)
+//        val dialog = Dialog(this)
         ActivityCompat.requestPermissions(
             this,
             permissionsArray,
@@ -182,6 +183,35 @@ class RemindersActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         when(requestCode){
             REQUEST_TURN_DEVICE_LOCATION_ON -> askToTurnOnLocation(false)
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        if (
+            grantResults.isEmpty() ||
+            grantResults[LOCATION_PERMISSION_INDEX] == PackageManager.PERMISSION_DENIED ||
+            (requestCode == REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSION_RESULT_CODE &&
+                    grantResults[BACKGROUND_LOCATION_PERMISSION_INDEX] ==
+                    PackageManager.PERMISSION_DENIED)
+        ) {
+            Snackbar.make(
+                binding.root,
+                R.string.permission_denied_explanation,
+                Snackbar.LENGTH_INDEFINITE
+            )
+                .setAction(R.string.settings) {
+                    startActivity(Intent().apply {
+                        action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                        data = Uri.fromParts("package", applicationContext.packageName, null)
+                    })
+                }.show()
+
         }
     }
 

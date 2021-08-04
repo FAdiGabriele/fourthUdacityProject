@@ -1,8 +1,12 @@
 package com.udacity.project4.locationreminders.savereminder
 
 import android.app.Application
+import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.location.Geofence
+import com.google.android.gms.location.GeofencingRequest
 import com.google.android.gms.maps.model.PointOfInterest
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseViewModel
@@ -10,6 +14,7 @@ import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
+import com.udacity.project4.utils.Constants
 import kotlinx.coroutines.launch
 
 class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSource) :
@@ -78,5 +83,39 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
             return false
         }
         return true
+    }
+
+    fun createGeoFence(reminderData: ReminderDataItem){
+        val geofence = Geofence.Builder()
+            .setRequestId(reminderData.id)
+            .setCircularRegion(reminderData.latitude!!,
+                reminderData.longitude!!,
+                Constants.GEOFENCE_RADIUS_IN_METERS
+            )
+            .setExpirationDuration(Constants.GEOFENCE_EXPIRATION_IN_MILLISECONDS)
+            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
+            .build()
+
+        val geofencingRequest = GeofencingRequest.Builder()
+            .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+            .addGeofence(geofence)
+            .build()
+
+//        geofencingClient.addGeofences(geofencingRequest, geofencePendingIntent)?.run {
+//            addOnSuccessListener {
+//                Toast.makeText(this@HuntMainActivity, R.string.geofences_added,
+//                    Toast.LENGTH_SHORT)
+//                    .show()
+//                Log.e("Add Geofence", geofence.requestId)
+//                viewModel.geofenceActivated()
+//            }
+//            addOnFailureListener {
+//                Toast.makeText(this@HuntMainActivity, R.string.geofences_not_added,
+//                    Toast.LENGTH_SHORT).show()
+//                if ((it.message != null)) {
+//                    Log.w(TAG, it.message!!)
+//                }
+//            }
+//        }
     }
 }
