@@ -75,8 +75,6 @@ class SaveReminderFragment : BaseFragment() {
 
             addGeofence(_viewModel.createGeoFenceRequest(reminderDataItem))
 
-
-
             _viewModel.validateAndSaveReminder(reminderDataItem)
         }
     }
@@ -104,7 +102,11 @@ class SaveReminderFragment : BaseFragment() {
                     Toast.makeText(this@SaveReminderFragment.requireActivity(), R.string.geofences_not_added,
                             Toast.LENGTH_SHORT).show()
                     if ((it.message != null)) {
-                        Log.w(TAG, it.message!!)
+                        Log.e(TAG, "message: ${it.message}")
+                        Log.e(TAG, "cause: ${it.cause?.message}")
+                        Log.e(TAG, "localize: ${it.localizedMessage}")
+                        Log.e(TAG, "localize: ${it.stackTrace}")
+                        Log.e(TAG, "localize: $it")
                     }
                 }
             }

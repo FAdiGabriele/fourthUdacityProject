@@ -37,6 +37,7 @@ import com.udacity.project4.utils.Constants.REQUEST_FOREGROUND_AND_BACKGROUND_PE
 import com.udacity.project4.utils.Constants.REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE
 import com.udacity.project4.utils.Constants.REQUEST_LOCATION_PERMISSION
 import com.udacity.project4.utils.Constants.REQUEST_TURN_DEVICE_LOCATION_ON
+import com.udacity.project4.utils.createChannel
 import kotlinx.android.synthetic.main.activity_reminders.*
 
 /**
@@ -54,6 +55,8 @@ class RemindersActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding= ActivityRemindersBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        createChannel(this )
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
             ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
