@@ -1,5 +1,6 @@
 package com.udacity.project4.locationreminders.data
 
+import com.google.android.gms.location.GeofencingRequest
 import com.udacity.project4.locationreminders.data.dto.Result
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 

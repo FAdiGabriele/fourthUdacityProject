@@ -2,9 +2,6 @@ package com.udacity.project4.locationreminders
 
 import android.Manifest
 import android.annotation.TargetApi
-import android.app.Activity
-import android.app.Application
-import android.app.Dialog
 import android.app.PendingIntent
 import android.content.Intent
 import android.content.IntentSender
@@ -14,19 +11,15 @@ import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
 import android.view.MenuItem
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.databinding.library.BuildConfig
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.gms.common.api.ResolvableApiException
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.LocationSettingsRequest
-import com.google.android.gms.location.LocationSettingsResponse
+import com.google.android.gms.location.*
 import com.google.android.material.snackbar.Snackbar
 import com.udacity.project4.R
-import com.udacity.project4.databinding.ActivityReminderDescriptionBinding
 import com.udacity.project4.databinding.ActivityRemindersBinding
 import com.udacity.project4.locationreminders.geofence.GeofenceBroadcastReceiver
 import com.udacity.project4.utils.Constants
@@ -39,6 +32,8 @@ import com.udacity.project4.utils.Constants.REQUEST_LOCATION_PERMISSION
 import com.udacity.project4.utils.Constants.REQUEST_TURN_DEVICE_LOCATION_ON
 import com.udacity.project4.utils.createChannel
 import kotlinx.android.synthetic.main.activity_reminders.*
+import org.koin.android.ext.android.inject
+import org.koin.androidx.viewmodel.dsl.viewModel
 
 /**
  * The RemindersActivity that holds the reminders fragments
@@ -46,9 +41,15 @@ import kotlinx.android.synthetic.main.activity_reminders.*
 class RemindersActivity : AppCompatActivity() {
 
     private lateinit var binding : ActivityRemindersBinding
+    private val commonViewModel: CommonViewModel by inject()
     //check device version
     private val runningQOrLater =
         android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q
+    val geofencePendingIntent: PendingIntent by lazy {
+        val intent = Intent(this, GeofenceBroadcastReceiver::class.java)
+        intent.action = ACTION_GEOFENCE_EVENT
+        PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,6 +57,7 @@ class RemindersActivity : AppCompatActivity() {
         binding= ActivityRemindersBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        setObservers()
         createChannel(this )
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
@@ -79,6 +81,16 @@ class RemindersActivity : AppCompatActivity() {
 
     }
 
+    private fun setObservers() {
+        commonViewModel.geoFencerObserver.observe(this, Observer {
+            askForForegroundAndBackgroundLocationPermission ({
+                addGeofence(it)
+            }, {
+                commonViewModel.saveGeoFenceRequest()
+                })
+        })
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> {
@@ -91,11 +103,12 @@ class RemindersActivity : AppCompatActivity() {
 
     //region ask location
 
-    private fun askForLocationPermission(){
+    private fun askForForegroundAndBackgroundLocationPermission(methodToInvoke : () -> Unit, alternativeMethod : () -> Unit){
         if (foregroundAndBackgroundLocationPermissionApproved()) {
-            askToTurnOnLocation()
+            methodToInvoke.invoke()
         } else {
             requestForegroundAndBackgroundLocationPermissions()
+            alternativeMethod.invoke()
         }
     }
 
@@ -212,5 +225,31 @@ class RemindersActivity : AppCompatActivity() {
         }
     }
 
+    //endregion
+
+    //region geofences
+    fun addGeofence(request : GeofencingRequest){
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return
+        }
+        val geofencingClient = LocationServices.getGeofencingClient(this)
+        geofencingClient.addGeofences(request, geofencePendingIntent)?.run {
+            addOnSuccessListener {
+                Toast.makeText(this@RemindersActivity, R.string.geofence_entered,
+                    Toast.LENGTH_SHORT)
+                    .show()
+                Log.e("Add Geofence", request.geofences[request.geofences.size-1].requestId)
+
+            }
+            addOnFailureListener {
+                Toast.makeText(this@RemindersActivity, R.string.geofences_not_added,
+                    Toast.LENGTH_SHORT).show()
+                if ((it.message != null)) {
+                    Log.e(Constants.TAG, "message: ${it.message}")
+                }
+            }
+        }
+
+    }
     //endregion
 }

@@ -2,6 +2,7 @@ package com.udacity.project4.locationreminders.data
 
 import android.app.Application
 import androidx.room.Room
+import com.google.android.gms.location.GeofencingRequest
 import com.udacity.project4.MyApp
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.data.dto.Result
