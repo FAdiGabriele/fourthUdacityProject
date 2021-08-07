@@ -33,7 +33,4 @@ class CommonViewModel(application: Application) : AndroidViewModel(application) 
             .build()
     }
 
-    fun saveGeoFenceRequest() {
-        TODO("Not yet implemented")
-    }
 }

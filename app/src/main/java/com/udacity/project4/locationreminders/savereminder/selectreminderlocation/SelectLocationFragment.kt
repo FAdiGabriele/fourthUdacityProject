@@ -4,9 +4,11 @@ package com.udacity.project4.locationreminders.savereminder.selectreminderlocati
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.content.res.Resources
 import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat.getSystemService
@@ -23,6 +25,7 @@ import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentSelectLocationBinding
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
+import com.udacity.project4.utils.Constants.LOCATION_TAG
 import com.udacity.project4.utils.Constants.REQUEST_LOCATION_PERMISSION
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
 import org.koin.android.ext.android.inject
@@ -61,13 +64,7 @@ class SelectLocationFragment : BaseFragment() , OnMapReadyCallback{
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
-//        okTODO: add the map setup implementation
-//        okTODO: zoom to the user location after taking his permission
-//        TODO: add style to the map
-//        okTODO: put a marker to location that the user selected
 
-
-//        okTODO: call this function after the user confirms on the selected location
         binding.buttonConfirm.setOnClickListener {
             onLocationSelected()
         }
@@ -76,9 +73,6 @@ class SelectLocationFragment : BaseFragment() , OnMapReadyCallback{
     }
 
     private fun onLocationSelected() {
-        //        okTODO: When the user confirms on the selected location,
-        //         send back the selected location details to the view model
-        //         and navigate back to the previous fragment to save the reminder and add the geofence
 
         _viewModel.latitude.value = latitude
         _viewModel.longitude.value = longitude
@@ -135,23 +129,22 @@ class SelectLocationFragment : BaseFragment() , OnMapReadyCallback{
         }
     }
 
-
+    // Customize the styling of the base map using a JSON object defined
+    // in a raw resource file.
     private fun setMapStyle(map: GoogleMap) {
-//        try {
-//            // Customize the styling of the base map using a JSON object defined
-//            // in a raw resource file.
-//            val success = map.setMapStyle(
-//                    MapStyleOptions.loadRawResourceStyle(
-//                            requireActivity(),
-//                            R.raw.map_style
-//                    )
-//            )
-//        if (!success) {
-//            Log.e(LOCATION_TAG, "Style parsing failed.")
-//        }
-//          } catch (e: Resources.NotFoundException) {
-//       Log.e(LOCATION_TAG, "Can't find style. Error: ", e)
-//   }
+        try {
+            val success = map.setMapStyle(
+                    MapStyleOptions.loadRawResourceStyle(
+                            requireActivity(),
+                            R.raw.map_style
+                    )
+            )
+        if (!success) {
+            Log.e(LOCATION_TAG, "Style parsing failed.")
+        }
+          } catch (e: Resources.NotFoundException) {
+       Log.e(LOCATION_TAG, "Can't find style. Error: ", e)
+   }
     }
 
     private fun clickOnMap(latLng: LatLng, nameOfPlace: String = ""){

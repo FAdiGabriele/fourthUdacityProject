@@ -33,7 +33,6 @@ import com.udacity.project4.utils.Constants.REQUEST_TURN_DEVICE_LOCATION_ON
 import com.udacity.project4.utils.createChannel
 import kotlinx.android.synthetic.main.activity_reminders.*
 import org.koin.android.ext.android.inject
-import org.koin.androidx.viewmodel.dsl.viewModel
 
 /**
  * The RemindersActivity that holds the reminders fragments
@@ -43,6 +42,7 @@ class RemindersActivity : AppCompatActivity() {
     private lateinit var binding : ActivityRemindersBinding
     private val commonViewModel: CommonViewModel by inject()
     //check device version
+    private lateinit var geofencingClient : GeofencingClient
     private val runningQOrLater =
         android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q
     val geofencePendingIntent: PendingIntent by lazy {
@@ -59,6 +59,7 @@ class RemindersActivity : AppCompatActivity() {
 
         setObservers()
         createChannel(this )
+        geofencingClient = LocationServices.getGeofencingClient(this)
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
             ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -79,15 +80,18 @@ class RemindersActivity : AppCompatActivity() {
         }
 
 
+
     }
+
 
     private fun setObservers() {
         commonViewModel.geoFencerObserver.observe(this, Observer {
-            askForForegroundAndBackgroundLocationPermission ({
+            if (foregroundAndBackgroundLocationPermissionApproved()) {
                 addGeofence(it)
-            }, {
-                commonViewModel.saveGeoFenceRequest()
-                })
+            } else {
+                requestForegroundAndBackgroundLocationPermissions()
+                Log.e(Constants.LOCATION_TAG, "GeoFenceRequest refused")
+            }
         })
     }
 
@@ -103,14 +107,6 @@ class RemindersActivity : AppCompatActivity() {
 
     //region ask location
 
-    private fun askForForegroundAndBackgroundLocationPermission(methodToInvoke : () -> Unit, alternativeMethod : () -> Unit){
-        if (foregroundAndBackgroundLocationPermissionApproved()) {
-            methodToInvoke.invoke()
-        } else {
-            requestForegroundAndBackgroundLocationPermissions()
-            alternativeMethod.invoke()
-        }
-    }
 
     private fun askToTurnOnLocation(resolve : Boolean = true){
         val locationRequest = LocationRequest.create().apply {
@@ -142,7 +138,7 @@ class RemindersActivity : AppCompatActivity() {
             }
         }
         locationSettingsResponseTask.addOnSuccessListener {
-           //todo
+            Toast.makeText(this, "Location activated", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -232,7 +228,6 @@ class RemindersActivity : AppCompatActivity() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return
         }
-        val geofencingClient = LocationServices.getGeofencingClient(this)
         geofencingClient.addGeofences(request, geofencePendingIntent)?.run {
             addOnSuccessListener {
                 Toast.makeText(this@RemindersActivity, R.string.geofence_entered,
@@ -250,6 +245,23 @@ class RemindersActivity : AppCompatActivity() {
             }
         }
 
+    }
+
+    private fun removeGeofences() {
+        if (!foregroundAndBackgroundLocationPermissionApproved()) {
+            return
+        }
+        geofencingClient.removeGeofences(geofencePendingIntent)?.run {
+            addOnSuccessListener {
+                //todo fix strings
+                Log.d(Constants.LOCATION_TAG, "getString(R.string.geofences_removed)")
+                Toast.makeText(applicationContext, "R.string.geofences_removed", Toast.LENGTH_SHORT)
+                        .show()
+            }
+            addOnFailureListener {
+                Log.d(Constants.LOCATION_TAG, "getString(R.string.geofences_not_removed)")
+            }
+        }
     }
     //endregion
 }

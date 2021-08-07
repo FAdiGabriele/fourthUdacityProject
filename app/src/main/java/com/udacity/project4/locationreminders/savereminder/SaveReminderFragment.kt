@@ -55,9 +55,10 @@ class SaveReminderFragment : BaseFragment() {
 
             val reminderDataItem = ReminderDataItem(title,description,location,latitude,longitude)
 
-            commonViewModel.createGeoFenceRequest(reminderDataItem)
+            _viewModel.validateAndSaveReminder(reminderDataItem){
+                commonViewModel.createGeoFenceRequest(reminderDataItem)
+            }
 
-            _viewModel.validateAndSaveReminder(reminderDataItem)
         }
     }
 
