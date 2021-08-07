@@ -57,22 +57,6 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
 
                     val foundItem = ReminderDataItem.getFromReminderDTO(foundReminder)
 
-//                    val notificationManager = ContextCompat.getSystemService(
-//                        context,
-//                        NotificationManager::class.java
-//                    ) as NotificationManager
-
-
-//                val foundIndex = Constants.LANDMARK_DATA.indexOfFirst {
-//                    it.id == fenceId
-//                }
-//                if ( -1 == foundIndex ) {
-//
-//                val notificationManager = ContextCompat.getSystemService(
-//                    context,
-//                    NotificationManager::class.java
-//                ) as NotificationManager
-
                     sendNotification(
                         context, foundItem
                     )

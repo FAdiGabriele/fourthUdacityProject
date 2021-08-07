@@ -30,7 +30,9 @@ class MyApp : Application() {
             }
 
             single {
-                CommonViewModel(get())
+                CommonViewModel(get(),
+                        get() as ReminderDataSource)
+
             }
 
             //Declare singleton definitions to be later injected using by inject()

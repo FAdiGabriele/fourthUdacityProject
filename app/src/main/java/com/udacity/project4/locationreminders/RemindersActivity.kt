@@ -20,7 +20,6 @@ import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.material.snackbar.Snackbar
 import com.udacity.project4.R
-import com.udacity.project4.authentication.AuthenticationActivity
 import com.udacity.project4.databinding.ActivityRemindersBinding
 import com.udacity.project4.locationreminders.geofence.GeofenceBroadcastReceiver
 import com.udacity.project4.utils.Constants
@@ -31,7 +30,6 @@ import com.udacity.project4.utils.Constants.REQUEST_FOREGROUND_AND_BACKGROUND_PE
 import com.udacity.project4.utils.Constants.REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE
 import com.udacity.project4.utils.Constants.REQUEST_LOCATION_PERMISSION
 import com.udacity.project4.utils.Constants.REQUEST_TURN_DEVICE_LOCATION_ON
-import com.udacity.project4.utils.createChannel
 import kotlinx.android.synthetic.main.activity_reminders.*
 import org.koin.android.ext.android.inject
 
@@ -59,7 +57,6 @@ class RemindersActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         setObservers()
-        createChannel(this )
         geofencingClient = LocationServices.getGeofencingClient(this)
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
@@ -79,9 +76,6 @@ class RemindersActivity : AppCompatActivity() {
         }else{
             askToTurnOnLocation()
         }
-
-
-
     }
 
 

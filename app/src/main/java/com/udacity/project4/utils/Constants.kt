@@ -23,9 +23,6 @@ object Constants {
     //geofence constants
     const val ACTION_GEOFENCE_EVENT = "RemindersActivity.project4.action.ACTION_GEOFENCE_EVENT"
     val GEOFENCE_EXPIRATION_IN_MILLISECONDS: Long = TimeUnit.HOURS.toMillis(1)
-
-    const val GEOFENCE_RADIUS_IN_METERS = 10f
-    const val EXTRA_GEOFENCE_INDEX = "GEOFENCE_INDEX"
-    const val NOTIFICATION_ID = 33
+    const val GEOFENCE_RADIUS_IN_METERS = 50f
     const val CHANNEL_ID = "GeofenceChannel"
 }

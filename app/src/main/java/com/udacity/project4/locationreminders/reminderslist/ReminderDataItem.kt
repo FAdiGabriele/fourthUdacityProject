@@ -22,7 +22,12 @@ data class ReminderDataItem(
                 reminderDTO.description,
                 reminderDTO.location,
                 reminderDTO.latitude,
-                reminderDTO.longitude)
+                reminderDTO.longitude,
+                reminderDTO.id)
         }
+    }
+
+    fun turnInReminderDTO() : ReminderDTO{
+        return ReminderDTO(title, description, location, latitude, longitude, id)
     }
 }

@@ -1,15 +1,21 @@
 package com.udacity.project4.locationreminders
 
 import android.app.Application
+import android.nfc.Tag
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingRequest
+import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import com.udacity.project4.utils.Constants
+import com.udacity.project4.utils.Constants.TAG
+import kotlinx.coroutines.launch
 
-class CommonViewModel(application: Application) : AndroidViewModel(application) {
+class CommonViewModel(application: Application, private val dataSource: ReminderDataSource) : AndroidViewModel(application) {
 
     private val  _geoFencerObserver = MutableLiveData<GeofencingRequest>()
     val geoFencerObserver : LiveData<GeofencingRequest>
@@ -33,4 +39,11 @@ class CommonViewModel(application: Application) : AndroidViewModel(application) 
             .build()
     }
 
+    fun removeReminderData (reminderData: ReminderDataItem){
+        viewModelScope.launch {
+            dataSource.deleteReminder(reminderData.turnInReminderDTO())
+            Log.e(TAG, "removed")
+        }
+
+    }
 }
