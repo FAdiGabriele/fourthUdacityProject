@@ -30,8 +30,9 @@ class MyApp : Application() {
             }
 
             single {
-                CommonViewModel(get(),
-                        get() as ReminderDataSource)
+                CommonViewModel(
+                    get() as ReminderDataSource
+                )
 
             }
 

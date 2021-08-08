@@ -9,4 +9,5 @@ interface OperationOfDefaultRepository {
     suspend fun getReminderById(reminderId: String): Result<ReminderDTO>
     suspend fun saveReminder(reminder: ReminderDTO)
     suspend fun deleteAllReminders()
+    suspend fun deleteReminder(reminder: ReminderDTO)
 }

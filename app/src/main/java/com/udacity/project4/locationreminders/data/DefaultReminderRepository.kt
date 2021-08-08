@@ -1,9 +1,5 @@
 package com.udacity.project4.locationreminders.data
 
-import android.app.Application
-import androidx.room.Room
-import com.google.android.gms.location.GeofencingRequest
-import com.udacity.project4.MyApp
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.data.dto.Result
 import kotlinx.coroutines.CoroutineDispatcher
@@ -28,5 +24,9 @@ class DefaultReminderRepository(
 
     override suspend fun deleteAllReminders() {
         return reminderDataSource.deleteAllReminders()
+    }
+
+    override suspend fun deleteReminder(reminder: ReminderDTO) {
+        reminderDataSource.deleteReminder(reminder)
     }
 }

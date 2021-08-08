@@ -3,8 +3,8 @@ package com.udacity.project4.locationreminders.data
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.data.dto.Result
 
-//Use FakeDataSource that acts as a test double to the LocalDataSource
-class FakeDataSource(var reminderList: MutableList<ReminderDTO>? = mutableListOf()) : ReminderDataSource {
+//Used for testing the real repository
+class FakeDataSource(val reminderList: MutableList<ReminderDTO>? = mutableListOf()) : ReminderDataSource {
 
     override suspend fun getReminders(): Result<List<ReminderDTO>> {
         reminderList?.let { return Result.Success(ArrayList(it)) }
@@ -32,6 +32,10 @@ class FakeDataSource(var reminderList: MutableList<ReminderDTO>? = mutableListOf
 
     override suspend fun deleteAllReminders() {
         reminderList?.clear()
+    }
+
+    override suspend fun deleteReminder(reminder: ReminderDTO) {
+        reminderList?.remove(reminder)
     }
 
 

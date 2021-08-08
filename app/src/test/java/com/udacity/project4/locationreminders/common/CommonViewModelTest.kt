@@ -1,11 +1,12 @@
-package com.udacity.project4.locationreminders.reminderslist
+package com.udacity.project4.locationreminders.common
 
 import android.os.Build
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.udacity.project4.MyApp
+import com.udacity.project4.locationreminders.CommonViewModel
 import com.udacity.project4.locationreminders.MainCoroutineRule
 import com.udacity.project4.locationreminders.data.FakeReminderRepository
+import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.hamcrest.MatcherAssert
 import org.hamcrest.core.IsEqual
@@ -13,24 +14,22 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.koin.test.KoinTest
 import org.robolectric.annotation.Config
 
 @RunWith(AndroidJUnit4::class)
 @Config(sdk = [Build.VERSION_CODES.P])
 @ExperimentalCoroutinesApi
-class RemindersListViewModelTest : KoinTest {
+class CommonViewModelTest {
 
     // Use a fake repository to be injected into the viewmodel
     lateinit var reminderRepository: FakeReminderRepository
 
-    // Subject under test
-    private lateinit var remindersViewModel: RemindersListViewModel
 
+    // Subject under test
+    private lateinit var commonViewModel: CommonViewModel
 
     @get:Rule
     var instantExecutorRule = InstantTaskExecutorRule()
-
 
     @ExperimentalCoroutinesApi
     @get:Rule
@@ -42,20 +41,30 @@ class RemindersListViewModelTest : KoinTest {
         reminderRepository = FakeReminderRepository()
         reminderRepository.addSomeFakeData()
 
-        remindersViewModel = RemindersListViewModel(MyApp(), reminderRepository)
+        commonViewModel = CommonViewModel(reminderRepository)
+    }
+
+
+    @Test
+    fun removeReminderData() {
+
+        commonViewModel.removeReminderData(
+                ReminderDataItem.getFromReminderDTO(reminderRepository.reminderList[1])
+        )
+
+        val newRemindersListSize = reminderRepository.reminderList.size
+
+        MatcherAssert.assertThat(newRemindersListSize, IsEqual(1))
     }
 
     @Test
-    fun getReminderList() {
+    fun createGeoFencingRequest(){
 
-        remindersViewModel.loadReminders()
+        val newReminderDataItem = ReminderDataItem("casual_title", "casual_description", "casual_location", 2.0, 2.0, "casual_id")
 
-        MatcherAssert.assertThat(remindersViewModel.remindersList.value, IsEqual(convertRepositoryTest()))
+        commonViewModel.createGeoFenceRequest(newReminderDataItem)
+
+       MatcherAssert.assertThat(commonViewModel.geoFencerObserver.value?.geofences?.size, IsEqual(1))
     }
 
-    fun convertRepositoryTest() : List<ReminderDataItem>{
-        return listOf(
-                ReminderDataItem.getFromReminderDTO(reminderRepository.reminderList[0]),
-                ReminderDataItem.getFromReminderDTO(reminderRepository.reminderList[1]))
-    }
 }

@@ -10,6 +10,9 @@ import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
+import kotlinx.coroutines.async
+import com.udacity.project4.locationreminders.data.dto.Result
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 
 class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSource) :
@@ -74,5 +77,14 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
             return false
         }
         return true
+    }
+
+    //Only fo rtesting purpose
+    @ExperimentalCoroutinesApi
+    fun checkSize(): Int{
+        return viewModelScope.async {
+            val list = dataSource.getReminders() as Result.Success<List<ReminderDTO>>
+            list.data.size
+        }.getCompleted()
     }
 }

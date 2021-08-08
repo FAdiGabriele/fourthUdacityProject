@@ -3,11 +3,15 @@ package com.udacity.project4.locationreminders.data
 import com.udacity.project4.locationreminders.MainCoroutineRule
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.data.dto.Result
+import junit.framework.Assert.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
+import org.hamcrest.CoreMatchers
 import org.hamcrest.MatcherAssert
+import org.hamcrest.Matchers.isA
 import org.hamcrest.core.IsEqual
+import org.hamcrest.core.IsInstanceOf
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -15,10 +19,10 @@ import org.junit.Test
 class DefaultReminderRepositoryTest {
 
     //fake data
-    private val reminderDTO0 = ReminderDTO("titolo0", "descrizione0", "luogo0", 1.0, 1.0, "0")
-    private val reminderDTO1 = ReminderDTO("titolo1", "descrizione1", "luogo1", 1.0, 1.0, "1")
-    private val reminderDTO2 = ReminderDTO("titolo2", "descrizione2", "luogo2", 1.0, 1.0, "2")
-    private val reminderDTO3 = ReminderDTO("titolo3", "descrizione3", "luogo3", 1.0, 1.0, "3")
+    private val reminderDTO0 = ReminderDTO("title0", "description0", "place0", 1.0, 1.0, "0")
+    private val reminderDTO1 = ReminderDTO("title1", "description1", "place1", 1.0, 1.0, "1")
+    private val reminderDTO2 = ReminderDTO("title2", "description2", "place2", 1.0, 1.0, "2")
+    private val reminderDTO3 = ReminderDTO("title3", "description3", "place3", 1.0, 1.0, "3")
     private val reminderList = listOf(reminderDTO0, reminderDTO1, reminderDTO2, reminderDTO3)
 
     private lateinit var fakeLocalDataSource: FakeDataSource
@@ -53,9 +57,9 @@ class DefaultReminderRepositoryTest {
     @Test
     fun getTitleReminderFromID_requestsTitleFromID() = mainCoroutineRule.runBlockingTest {
 
-        val reminder0 = repositoryToTest.getReminderById("0") as Result.Success<ReminderDTO>
+        val reminder = repositoryToTest.getReminderById("0") as Result.Success<ReminderDTO>
 
-        MatcherAssert.assertThat(reminder0.data, IsEqual(reminderDTO0))
+        MatcherAssert.assertThat(reminder.data, IsEqual(reminderDTO0))
     }
 
     @ExperimentalCoroutinesApi
@@ -66,6 +70,15 @@ class DefaultReminderRepositoryTest {
 
         repositoryToTest.saveReminder(reminderDTO4)
 
-        MatcherAssert.assertThat(reminderDTO4, IsEqual(reminderList[5]))
+        MatcherAssert.assertThat(reminderDTO4, IsEqual(fakeLocalDataSource.reminderList?.get(4)))
+    }
+
+    @ExperimentalCoroutinesApi
+    @Test
+    fun deleteReminder_isSuccessifulDeletedInDB() = mainCoroutineRule.runBlockingTest{
+
+        repositoryToTest.deleteReminder(reminderDTO3)
+
+        MatcherAssert.assertThat(fakeLocalDataSource.reminderList?.size, CoreMatchers.`is`(3))
     }
 }
