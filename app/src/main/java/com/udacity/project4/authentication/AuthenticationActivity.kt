@@ -56,7 +56,7 @@ class AuthenticationActivity : AppCompatActivity() {
             val response = IdpResponse.fromResultIntent(data)
             if (resultCode == Activity.RESULT_OK) {
                 // Successfully signed in user
-                Log.i(
+                Log.d(
                         Constants.FIREBASE_TAG, "Successfully signed in user ${FirebaseAuth.getInstance().currentUser?.displayName}!"
                 )
 
@@ -65,7 +65,7 @@ class AuthenticationActivity : AppCompatActivity() {
                 finish()
             } else {
                 // Sign in failed
-                Log.i(Constants.FIREBASE_TAG, "Sign in unsuccessful ${response?.error?.errorCode}")
+                Log.e(Constants.FIREBASE_TAG, "Sign in unsuccessful ${response?.error?.errorCode}")
 
                 Toast.makeText(this, resources.getText(R.string.login_failed), Toast.LENGTH_LONG).show()
             }

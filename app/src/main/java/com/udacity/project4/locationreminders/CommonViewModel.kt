@@ -1,5 +1,6 @@
 package com.udacity.project4.locationreminders
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -7,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingRequest
 import com.udacity.project4.locationreminders.data.ReminderDataSource
+import com.udacity.project4.locationreminders.geofence.GeofenceTransitionsJobIntentService
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import com.udacity.project4.utils.Constants
 import kotlinx.coroutines.launch
@@ -29,6 +31,8 @@ class CommonViewModel(private val dataSource: ReminderDataSource) : ViewModel() 
             .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
             .build()
 
+        Log.v(Constants.GEOFENCE_TAG, "Created Geofence with id ${geofence.requestId}")
+
         _geoFencerObserver.value = GeofencingRequest.Builder()
             .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
             .addGeofence(geofence)
@@ -41,4 +45,6 @@ class CommonViewModel(private val dataSource: ReminderDataSource) : ViewModel() 
         }
 
     }
+
+
 }

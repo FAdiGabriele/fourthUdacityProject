@@ -33,7 +33,7 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
 
             if (geofencingEvent.hasError()) {
                 val errorMessage = errorMessage(context, geofencingEvent.errorCode)
-                Log.e(Constants.TAG, errorMessage)
+                Log.e(Constants.GEOFENCE_TAG, errorMessage)
                 return
             }
 
@@ -43,7 +43,7 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
                     geofencingEvent.triggeringGeofences.isNotEmpty() ->
                         geofencingEvent.triggeringGeofences[0].requestId
                     else -> {
-                        Log.e(Constants.TAG, "No Geofence Trigger Found! Abort mission!")
+                        Log.e(Constants.GEOFENCE_TAG, "No Geofence Trigger Found! Abort mission!")
                         return
                     }
                 }
@@ -51,7 +51,7 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
                     val foundReminder = LocalDB.createRemindersDao(context).getReminderById(fenceId)
 
                     if (foundReminder == null) {
-                        Log.e(Constants.TAG, "Unknown Geofence: Abort Mission")
+                        Log.e(Constants.GEOFENCE_TAG, "Unknown Geofence: Abort Mission")
                         return@launch
                     }
 

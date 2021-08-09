@@ -22,6 +22,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.udacity.project4.R
 import com.udacity.project4.databinding.ActivityRemindersBinding
 import com.udacity.project4.locationreminders.geofence.GeofenceBroadcastReceiver
+import com.udacity.project4.locationreminders.geofence.GeofenceTransitionsJobIntentService
 import com.udacity.project4.utils.Constants
 import com.udacity.project4.utils.Constants.ACTION_GEOFENCE_EVENT
 import com.udacity.project4.utils.Constants.BACKGROUND_LOCATION_PERMISSION_INDEX
@@ -133,7 +134,7 @@ class RemindersActivity : AppCompatActivity() {
             }
         }
         locationSettingsResponseTask.addOnSuccessListener {
-            Toast.makeText(this, "Location activated", Toast.LENGTH_SHORT).show()
+            Log.d(Constants.LOCATION_TAG, "Location activated")
         }
     }
 
@@ -228,18 +229,24 @@ class RemindersActivity : AppCompatActivity() {
                 Toast.makeText(this@RemindersActivity, R.string.geofence_entered,
                     Toast.LENGTH_SHORT)
                     .show()
-                Log.e("Add Geofence", request.geofences[request.geofences.size-1].requestId)
-
+                Log.d(Constants.GEOFENCE_TAG, "Add Geofence with id: ${request.geofences.last().requestId}")
+                startGeofencingService(request)
             }
             addOnFailureListener {
                 Toast.makeText(this@RemindersActivity, R.string.geofences_not_added,
                     Toast.LENGTH_SHORT).show()
                 if ((it.message != null)) {
-                    Log.e(Constants.TAG, "message: ${it.message}")
+                    Log.e(Constants.GEOFENCE_TAG, "message: ${it.message}")
                 }
             }
         }
 
+    }
+
+    private fun startGeofencingService(request: GeofencingRequest) {
+        val intent = Intent()
+        intent.putExtra(Constants.GEOFENCING_REQUEST, request)
+        GeofenceTransitionsJobIntentService.enqueueWork(this, intent)
     }
 
     private fun removeGeofences() {
@@ -249,12 +256,12 @@ class RemindersActivity : AppCompatActivity() {
         geofencingClient.removeGeofences(geofencePendingIntent)?.run {
             addOnSuccessListener {
                 //todo fix strings
-                Log.d(Constants.LOCATION_TAG, "getString(R.string.geofences_removed)")
+                Log.d(Constants.GEOFENCE_TAG, "getString(R.string.geofences_removed)")
                 Toast.makeText(applicationContext, "R.string.geofences_removed", Toast.LENGTH_SHORT)
                         .show()
             }
             addOnFailureListener {
-                Log.d(Constants.LOCATION_TAG, "getString(R.string.geofences_not_removed)")
+                Log.e(Constants.GEOFENCE_TAG, "getString(R.string.geofences_not_removed)")
             }
         }
     }
