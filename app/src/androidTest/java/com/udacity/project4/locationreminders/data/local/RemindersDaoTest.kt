@@ -25,6 +25,65 @@ import org.junit.Test
 @SmallTest
 class RemindersDaoTest {
 
-//    TODO: Add testing implementation to the RemindersDao.kt
+    // Executes each task synchronously using Architecture Components.
+    @get:Rule
+    var instantExecutorRule = InstantTaskExecutorRule()
+
+
+    private lateinit var database: RemindersDatabase
+
+    @Before
+    fun initDb() {
+        // Using an in-memory database so that the information stored here disappears when the
+        // process is killed.
+        database = Room.inMemoryDatabaseBuilder(
+            ApplicationProvider.getApplicationContext(),
+            RemindersDatabase::class.java
+        ).allowMainThreadQueries().build()
+    }
+
+    @After
+    fun closeDb() = database.close()
+
+    @Test
+    fun insertTaskAndGetById() = runBlockingTest {
+        // GIVEN - Insert a task.,
+        val reminder = ReminderDTO("title", "description", "location",1.0, 1.0, "id")
+        database.reminderDao().saveReminder(reminder)
+
+        // WHEN - Get the task by id from the database.
+        val loaded = database.reminderDao().getReminderById(reminder.id)
+
+        // THEN - The loaded data contains the expected values.
+        assertThat<ReminderDTO>(loaded as ReminderDTO, notNullValue())
+        assertThat(loaded.id, `is`(reminder.id))
+        assertThat(loaded.title, `is`(reminder.title))
+        assertThat(loaded.description, `is`(reminder.description))
+        assertThat(loaded.location, `is`(reminder.location))
+        assertThat(loaded.latitude, `is`(reminder.latitude))
+        assertThat(loaded.longitude, `is`(reminder.longitude))
+
+    }
+
+    @Test
+    fun updateTaskAndGetById() = runBlockingTest {
+        // GIVEN - Insert a task.
+        val reminder = ReminderDTO("title", "description", "location",1.0, 1.0, "unique_id")
+        database.reminderDao().saveReminder(reminder)
+
+        // WHEN - Iserted a Task with the same ID
+        val reminder2 = ReminderDTO("title2", "description2","location2",1.0, 1.0, "unique_id")
+        database.reminderDao().saveReminder(reminder2)
+
+        // THEN - The loaded data contains the updated values.
+        val loaded = database.reminderDao().getReminderById(reminder.id)
+        assertThat<ReminderDTO>(loaded as ReminderDTO, notNullValue())
+        assertThat(loaded.id, `is`(reminder2.id))
+        assertThat(loaded.title, `is`(reminder2.title))
+        assertThat(loaded.description, `is`(reminder2.description))
+        assertThat(loaded.location, `is`(reminder2.location))
+        assertThat(loaded.latitude, `is`(reminder2.latitude))
+        assertThat(loaded.longitude, `is`(reminder2.longitude))
+    }
 
 }

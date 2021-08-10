@@ -1,14 +1,11 @@
 package com.udacity.project4.locationreminders.savereminder
 
 import android.os.Build
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.udacity.project4.MyApp
 import com.udacity.project4.locationreminders.MainCoroutineRule
 import com.udacity.project4.locationreminders.data.FakeReminderRepository
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
-import com.udacity.project4.locationreminders.reminderslist.RemindersListViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.hamcrest.MatcherAssert
 import org.hamcrest.core.IsEqual
@@ -22,7 +19,6 @@ import org.koin.core.context.stopKoin
 import org.koin.core.module.Module
 import org.koin.dsl.module
 import org.koin.test.AutoCloseKoinTest
-import org.koin.test.KoinTest
 import org.koin.test.inject
 import org.robolectric.annotation.Config
 
