@@ -249,21 +249,20 @@ class RemindersActivity : AppCompatActivity() {
         GeofenceTransitionsJobIntentService.enqueueWork(this, intent)
     }
 
-    private fun removeGeofences() {
-        if (!foregroundAndBackgroundLocationPermissionApproved()) {
-            return
-        }
-        geofencingClient.removeGeofences(geofencePendingIntent)?.run {
-            addOnSuccessListener {
-                //todo fix strings
-                Log.d(Constants.GEOFENCE_TAG, "getString(R.string.geofences_removed)")
-                Toast.makeText(applicationContext, "R.string.geofences_removed", Toast.LENGTH_SHORT)
-                        .show()
-            }
-            addOnFailureListener {
-                Log.e(Constants.GEOFENCE_TAG, "getString(R.string.geofences_not_removed)")
-            }
-        }
-    }
+//    private fun removeGeofences() {
+//        if (!foregroundAndBackgroundLocationPermissionApproved()) {
+//            return
+//        }
+//        geofencingClient.removeGeofences(geofencePendingIntent)?.run {
+//            addOnSuccessListener {
+//                Log.d(Constants.GEOFENCE_TAG, getString(R.string.geofences_removed))
+//                Toast.makeText(applicationContext, R.string.geofences_removed, Toast.LENGTH_SHORT)
+//                        .show()
+//            }
+//            addOnFailureListener {
+//                Log.e(Constants.GEOFENCE_TAG, getString(R.string.geofences_not_removed))
+//            }
+//        }
+//    }
     //endregion
 }
