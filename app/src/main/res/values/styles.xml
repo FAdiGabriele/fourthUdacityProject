@@ -8,4 +8,7 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <!-- Theme for testing -->
+    <style name="DifferentTheme" parent="AppTheme" />
+
 </resources>
