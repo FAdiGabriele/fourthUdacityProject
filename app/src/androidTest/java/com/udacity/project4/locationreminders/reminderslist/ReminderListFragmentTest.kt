@@ -1,9 +1,11 @@
 package com.udacity.project4.locationreminders.reminderslist
 
+import android.app.Application
 import android.os.Bundle
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions
@@ -15,36 +17,72 @@ import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.data.local.FakeDataSource
 import com.udacity.project4.locationreminders.data.local.LocalDB
+import com.udacity.project4.locationreminders.data.local.RemindersLocalRepository
+import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.util.atPosition
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.koin.androidx.viewmodel.dsl.viewModel
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.dsl.module
+import org.koin.test.AutoCloseKoinTest
+import org.koin.test.KoinTest
+import org.koin.test.get
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 
 @ExperimentalCoroutinesApi
 @RunWith(AndroidJUnit4::class)
 @MediumTest //UI Testing
-class ReminderListFragmentTest {
+class ReminderListFragmentTest : KoinTest {
 
 //    TODO: test the navigation of the fragments.
 //    TODO: test the displayed data on the UI.
 //    TODO: add testing for the error messages.
 
-    private lateinit var dataSource: ReminderDataSource
+    private lateinit var repository: ReminderDataSource
+    private lateinit var appContext: Application
 
+    /**
+     * As we use Koin as a Service Locator Library to develop our code, we'll also use Koin to test our code.
+     * at this step we will initialize Koin related code to be able to use it in out testing.
+     */
     @Before
-    fun initDb() {
-        dataSource = FakeDataSource()
+    fun init() {
+        stopKoin()//stop the original app koin
+        appContext = ApplicationProvider.getApplicationContext()
+        val myModule = module {
+            viewModel {
+                RemindersListViewModel(
+                        appContext,
+                        repository
+                )
+            }
+            single { RemindersLocalRepository(get()) as ReminderDataSource }
+        }
+        //declare a new koin module
+        startKoin {
+            modules(listOf(myModule))
+        }
+
+        repository = FakeDataSource()
+
+        //clear the data to start fresh
+        runBlocking {
+            repository.deleteAllReminders()
+        }
     }
 
     @Test
     fun clickAddTaskButton_navigateToAddEditFragment() = runBlockingTest {
-        dataSource.saveReminder(ReminderDTO("TITLE1", "DESCRIPTION1", "LOCATION1", 1.0,1.0,"id1"))
-        dataSource.saveReminder(ReminderDTO("TITLE2", "DESCRIPTION2", "LOCATION2", 1.0,1.0,"id2"))
+        repository.saveReminder(ReminderDTO("TITLE1", "DESCRIPTION1", "LOCATION1", 1.0,1.0,"id1"))
+        repository.saveReminder(ReminderDTO("TITLE2", "DESCRIPTION2", "LOCATION2", 1.0,1.0,"id2"))
 
         // GIVEN - On the list screen
         val scenario = launchFragmentInContainer<ReminderListFragment>(Bundle(), R.style.DifferentTheme)
@@ -65,8 +103,8 @@ class ReminderListFragmentTest {
 
     @Test
     fun papope() = runBlockingTest {
-        dataSource.saveReminder(ReminderDTO("TITLE1", "DESCRIPTION1", "LOCATION1", 1.0,1.0,"id1"))
-        dataSource.saveReminder(ReminderDTO("TITLE2", "DESCRIPTION2", "LOCATION2", 1.0,1.0,"id2"))
+        repository.saveReminder(ReminderDTO("TITLE1", "DESCRIPTION1", "LOCATION1", 1.0,1.0,"id1"))
+        repository.saveReminder(ReminderDTO("TITLE2", "DESCRIPTION2", "LOCATION2", 1.0,1.0,"id2"))
 
         // GIVEN - On the list screen
         val scenario = launchFragmentInContainer<ReminderListFragment>(Bundle(), R.style.DifferentTheme)
