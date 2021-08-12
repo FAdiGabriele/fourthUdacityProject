@@ -79,6 +79,26 @@ class ReminderListFragmentTest : KoinTest {
     }
 
     @Test
+    fun saveDataInDatabase_dataIsVisible() = runBlockingTest {
+        // GIVEN Reminder saved in DB
+        repository.saveReminder(ReminderDTO("TITLE1", "DESCRIPTION1", "LOCATION1", 1.0,1.0,"id1"))
+        repository.saveReminder(ReminderDTO("TITLE2", "DESCRIPTION2", "LOCATION2", 1.0,1.0,"id2"))
+
+        // WHEN - FragmentList starts
+        val scenario = launchFragmentInContainer<ReminderListFragment>(Bundle(), R.style.DifferentTheme)
+
+        val navController = mock(NavController::class.java)
+        scenario.onFragment {
+            Navigation.setViewNavController(it.view!!, navController)
+        }
+
+        // THEN - Verify that we can see almost one reminder
+        onView(withId(R.id.reminderssRecyclerView)).check(ViewAssertions.matches(atPosition(0, withText("TITLE1"))))
+
+
+    }
+
+    @Test
     fun clickAddTaskButton_navigateToAddEditFragment() = runBlockingTest {
         repository.saveReminder(ReminderDTO("TITLE1", "DESCRIPTION1", "LOCATION1", 1.0,1.0,"id1"))
         repository.saveReminder(ReminderDTO("TITLE2", "DESCRIPTION2", "LOCATION2", 1.0,1.0,"id2"))
@@ -100,22 +120,5 @@ class ReminderListFragmentTest : KoinTest {
         )
     }
 
-    @Test
-    fun papope() = runBlockingTest {
-        repository.saveReminder(ReminderDTO("TITLE1", "DESCRIPTION1", "LOCATION1", 1.0,1.0,"id1"))
-        repository.saveReminder(ReminderDTO("TITLE2", "DESCRIPTION2", "LOCATION2", 1.0,1.0,"id2"))
-
-        // GIVEN - On the list screen
-        val scenario = launchFragmentInContainer<ReminderListFragment>(Bundle(), R.style.DifferentTheme)
-
-        val navController = mock(NavController::class.java)
-        scenario.onFragment {
-            Navigation.setViewNavController(it.view!!, navController)
-        }
-
-        onView(withId(R.id.reminderssRecyclerView)).check(ViewAssertions.matches(atPosition(0, withText("TITLE1"))))
-
-
-    }
 
 }
