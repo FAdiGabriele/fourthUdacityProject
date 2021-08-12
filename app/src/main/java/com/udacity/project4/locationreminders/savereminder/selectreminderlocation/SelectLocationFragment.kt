@@ -2,24 +2,24 @@ package com.udacity.project4.locationreminders.savereminder.selectreminderlocati
 
 
 import android.Manifest
-import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.location.Location
-import android.location.LocationManager
 import android.os.Bundle
 import android.util.Log
 import android.view.*
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.databinding.DataBindingUtil
-import androidx.navigation.fragment.findNavController
-import com.google.android.gms.location.*
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.*
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
+import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PointOfInterest
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
@@ -63,6 +63,7 @@ class SelectLocationFragment : BaseFragment() , OnMapReadyCallback{
 
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
+
 
 
         binding.buttonConfirm.setOnClickListener {
@@ -120,12 +121,12 @@ class SelectLocationFragment : BaseFragment() , OnMapReadyCallback{
         enableMyLocation()
 
         map.setOnMapClickListener{ clickedCoordinates ->
-            clickOnMap(clickedCoordinates)
+                clickOnMap(clickedCoordinates)
         }
 
         map.setOnPoiClickListener{ pointOfInterest ->
-            selectedPOI = pointOfInterest
-            clickOnMap(pointOfInterest.latLng, pointOfInterest.name)
+                selectedPOI = pointOfInterest
+                clickOnMap(pointOfInterest.latLng, pointOfInterest.name)
         }
     }
 
@@ -161,11 +162,12 @@ class SelectLocationFragment : BaseFragment() , OnMapReadyCallback{
             "(${shortLatitude},$shortLongitude)"
         }
 
-
-        if(!buttonShowed){
+        if (!buttonShowed) {
             binding.buttonConfirm.visibility = View.VISIBLE
             buttonShowed = true
         }
+
+
     }
 
 

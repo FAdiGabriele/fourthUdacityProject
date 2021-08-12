@@ -37,14 +37,14 @@
             android:value="${myApiMaps}" />
 
         <activity android:name=".authentication.AuthenticationActivity">
-<!-- TODO: remember to edit filter -->
-        </activity>
-        <activity android:name=".locationreminders.RemindersActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity android:name=".locationreminders.RemindersActivity" >
+
         </activity>
         <receiver
             android:name=".locationreminders.geofence.GeofenceBroadcastReceiver"

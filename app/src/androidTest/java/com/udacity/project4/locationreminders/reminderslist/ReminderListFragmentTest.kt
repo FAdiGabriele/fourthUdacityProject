@@ -60,11 +60,10 @@ class ReminderListFragmentTest : KoinTest {
         val myModule = module {
             viewModel {
                 RemindersListViewModel(
-                        appContext,
-                        repository
+                    appContext,
+                    repository
                 )
             }
-            single { RemindersLocalRepository(get()) as ReminderDataSource }
         }
         //declare a new koin module
         startKoin {
