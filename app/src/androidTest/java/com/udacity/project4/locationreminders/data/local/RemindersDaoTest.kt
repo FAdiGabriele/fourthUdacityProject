@@ -71,7 +71,7 @@ class RemindersDaoTest {
         val reminder = ReminderDTO("title", "description", "location",1.0, 1.0, "unique_id")
         database.reminderDao().saveReminder(reminder)
 
-        // WHEN - Iserted a Task with the same ID
+        // WHEN - Inserted a Task with the same ID
         val reminder2 = ReminderDTO("title2", "description2","location2",1.0, 1.0, "unique_id")
         database.reminderDao().saveReminder(reminder2)
 

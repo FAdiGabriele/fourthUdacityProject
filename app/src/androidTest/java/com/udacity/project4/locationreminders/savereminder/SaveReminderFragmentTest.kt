@@ -86,27 +86,35 @@ class SaveReminderFragmentTest : KoinTest {
     @Test
     fun iFYouNotFillImportantField_ShowError(){
 
+        //GIVEN the SaveReminderFragment
         val scenario = launchFragmentInContainer<SaveReminderFragment>(Bundle(), R.style.DifferentTheme)
 
+        //WHEN we do NOT insert the data
         val navController = mock(NavController::class.java)
         scenario.onFragment {
             Navigation.setViewNavController(it.view!!, navController)
         }
 
+        //WHEN click on Fab
         onView(withId(R.id.saveReminder)).perform(click())
 
+        //THEN appears a Toast that suggest to  fill the mandatory field
         onView(withText(R.string.err_enter_title)).inRoot(withDecorView(not(activityTestRule.activity.window.decorView))).check(matches(isDisplayed()))
     }
 
     @Test
     fun ifYouFillImportantField_NavigateToReminderListFragment(){
 
+        //GIVEN data to insert
         val reminderToSave = ReminderDataItem("TITLE1", "description", "LOCATION1", 1.0, 1.0, "id1")
 
 
+        //GIVEN the SaveReminderFragment
         val scenario = launchFragmentInContainer<SaveReminderFragment>(Bundle(), R.style.DifferentTheme)
 
         val navController = mock(NavController::class.java)
+
+        //WHEN  we insert the data
         scenario.onFragment {
             Navigation.setViewNavController(it.view!!, navController)
 
@@ -119,8 +127,10 @@ class SaveReminderFragmentTest : KoinTest {
         onView(withId(R.id.reminderTitle)).perform(replaceText(reminderToSave.title))
         onView(withId(R.id.reminderDescription)).perform(replaceText(reminderToSave.description))
 
+        //WHEN click on Fab
         onView(withId(R.id.saveReminder)).perform(click())
 
+        //THEN it navigate back to ReminderListFragment
         Mockito.verify(navController).popBackStack()
     }
 

@@ -1,13 +1,6 @@
 package com.udacity.project4
 
-import android.Manifest
 import android.app.Application
-import android.content.pm.PackageManager
-import android.os.Bundle
-import androidx.core.app.ActivityCompat
-import androidx.fragment.app.testing.launchFragmentInContainer
-import androidx.navigation.NavController
-import androidx.navigation.Navigation
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider.getApplicationContext
 import androidx.test.espresso.Espresso
@@ -23,15 +16,12 @@ import com.udacity.project4.locationreminders.RemindersActivity
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.local.LocalDB
 import com.udacity.project4.locationreminders.data.local.RemindersLocalRepository
-import com.udacity.project4.locationreminders.reminderslist.ReminderListFragment
 import com.udacity.project4.locationreminders.reminderslist.RemindersListViewModel
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.util.DataBindingIdlingResource
 import com.udacity.project4.util.monitorActivity
 import com.udacity.project4.utils.EspressoIdlingResource
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.runBlockingTest
-import org.hamcrest.core.IsNot.not
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -42,7 +32,6 @@ import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import org.koin.test.AutoCloseKoinTest
 import org.koin.test.get
-import org.mockito.Mockito
 
 
 @RunWith(AndroidJUnit4::class)
@@ -83,7 +72,6 @@ class RemindersActivityTest :
 
             }
 
-            single { RemindersLocalRepository(get()) as ReminderDataSource }
             single { LocalDB.createRemindersDao(appContext) }
         }
         //declare a new koin module
@@ -115,35 +103,53 @@ class RemindersActivityTest :
 
     @Test
     fun createOneReminder() {
-        // Start up Tasks screen
+        // GIVEN  the activity reminder
         val activityScenario = ActivityScenario.launch(RemindersActivity::class.java)
         dataBindingIdlingResource.monitorActivity(activityScenario)
 
+        // WHEN click on Fab
         Espresso.onView(withId(R.id.addReminderFAB)).check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
         Espresso.onView(withId(R.id.addReminderFAB)).perform(ViewActions.click())
 
+        //THEN It should open the SaveReminderFragment,else the test fail
+
+        //WHEN we insert data
         Espresso.onView(withId(R.id.reminderTitle))
             .perform(ViewActions.replaceText("NEW TITLE"))
         Espresso.onView(withId(R.id.reminderDescription))
             .perform(ViewActions.replaceText("NEW DESCRIPTION"))
 
+        //WHEN we click on Location
         Espresso.onView(withId(R.id.selectLocation)).perform(ViewActions.click())
 
 
+        //THEN It should open the SelectLocationFragment,else the test fail
+
+        //THEN checking if is visible map on Layout
         Espresso.onView(withId(R.id.map)).check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
+        //WHEN we click on map
         Espresso.onView(withId(R.id.map)).perform(ViewActions.click())
 
+        //Here we wait for loading of map and update the UI
         Thread.sleep(1000)
+        //THEN It should appears a button, else the test fail
         Espresso.onView(withId(R.id.button_confirm)).check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
+
+        //WHEN click on button
         Espresso.onView(withId(R.id.button_confirm)).perform(ViewActions.click())
 
-
+        //THEN It should open the SaveReminderFragment,else the test fail
+        //THEN we check if SaveReminderFragment store the other values
         Espresso.onView(ViewMatchers.withText("NEW TITLE"))
             .check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
         Espresso.onView(ViewMatchers.withText("NEW DESCRIPTION"))
             .check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
+
+        //WHEN we click on FAB
         Espresso.onView(withId(R.id.saveReminder)).perform(ViewActions.click())
 
+        //THEN It should open the ReminderListFragment,else the test fail
+        //THEN we check if the new reminder is created,  else the test fail
         Espresso.onView(ViewMatchers.withText("NEW TITLE"))
             .check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
         Espresso.onView(ViewMatchers.withText("NEW DESCRIPTION"))
