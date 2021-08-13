@@ -130,7 +130,7 @@ class RemindersActivityTest :
         //WHEN we click on map
         Espresso.onView(withId(R.id.map)).perform(ViewActions.click())
 
-        //Here we wait for loading of map and update the UI
+        //Here we wait for map loading and update the UI
         Thread.sleep(1000)
         //THEN It should appears a button, else the test fail
         Espresso.onView(withId(R.id.button_confirm)).check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
