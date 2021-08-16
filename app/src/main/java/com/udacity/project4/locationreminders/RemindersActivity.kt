@@ -43,8 +43,7 @@ class RemindersActivity : AppCompatActivity() {
     private val commonViewModel: CommonViewModel by inject()
     //check device version
     private lateinit var geofencingClient : GeofencingClient
-    private val runningQOrLater =
-        android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q
+
     val geofencePendingIntent: PendingIntent by lazy {
         val intent = Intent(this, GeofenceBroadcastReceiver::class.java)
         intent.action = ACTION_GEOFENCE_EVENT
@@ -104,82 +103,10 @@ class RemindersActivity : AppCompatActivity() {
     //region ask location
 
 
-    private fun askToTurnOnLocation(resolve : Boolean = true){
-        val locationRequest = LocationRequest.create().apply {
-            priority = LocationRequest.PRIORITY_LOW_POWER
-        }
-        val builder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
-
-        val settingsClient = LocationServices.getSettingsClient(this)
-
-        //variable that checks location settings
-        val locationSettingsResponseTask =
-            settingsClient.checkLocationSettings(builder.build())
-
-        locationSettingsResponseTask.addOnFailureListener { exception ->
-            if (exception is ResolvableApiException && resolve){
-                try {
-                    exception.startResolutionForResult(this,
-                        REQUEST_TURN_DEVICE_LOCATION_ON)
-                } catch (sendEx: IntentSender.SendIntentException) {
-                    Log.d(Constants.LOCATION_TAG, "Error getting location settings resolution: " + sendEx.message)
-                }
-            } else {
-                Snackbar.make(
-                    binding.root,
-                    R.string.location_required_error, Snackbar.LENGTH_INDEFINITE
-                ).setAction(android.R.string.ok) {
-                    askToTurnOnLocation()
-                }.show()
-            }
-        }
-        locationSettingsResponseTask.addOnSuccessListener {
-            Log.d(Constants.LOCATION_TAG, "Location activated")
-        }
-    }
 
 
-    @TargetApi(29)
-    private fun foregroundAndBackgroundLocationPermissionApproved(): Boolean {
-        val foregroundLocationApproved = (
-                PackageManager.PERMISSION_GRANTED ==
-                        ActivityCompat.checkSelfPermission(this,
-                            Manifest.permission.ACCESS_FINE_LOCATION))
-        val backgroundPermissionApproved =
-            if (runningQOrLater) {
 
-                //it is required only from Android Q
-                PackageManager.PERMISSION_GRANTED ==
-                        ActivityCompat.checkSelfPermission(
-                            this, Manifest.permission.ACCESS_BACKGROUND_LOCATION
-                        )
-            } else {
-                true
-            }
-        return foregroundLocationApproved && backgroundPermissionApproved
-    }
 
-    @TargetApi(29 )
-    private fun requestForegroundAndBackgroundLocationPermissions() {
-        if (foregroundAndBackgroundLocationPermissionApproved())
-            return
-        var permissionsArray = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
-        val resultCode = when {
-            runningQOrLater -> {
-                permissionsArray += Manifest.permission.ACCESS_BACKGROUND_LOCATION
-                REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSION_RESULT_CODE
-            }
-            else -> REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE
-        }
-        Log.d(Constants.LOCATION_TAG, "Request foreground only location permission")
-
-//        val dialog = Dialog(this)
-        ActivityCompat.requestPermissions(
-            this,
-            permissionsArray,
-            resultCode
-        )
-    }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -249,20 +176,6 @@ class RemindersActivity : AppCompatActivity() {
         GeofenceTransitionsJobIntentService.enqueueWork(this, intent)
     }
 
-//    private fun removeGeofences() {
-//        if (!foregroundAndBackgroundLocationPermissionApproved()) {
-//            return
-//        }
-//        geofencingClient.removeGeofences(geofencePendingIntent)?.run {
-//            addOnSuccessListener {
-//                Log.d(Constants.GEOFENCE_TAG, getString(R.string.geofences_removed))
-//                Toast.makeText(applicationContext, R.string.geofences_removed, Toast.LENGTH_SHORT)
-//                        .show()
-//            }
-//            addOnFailureListener {
-//                Log.e(Constants.GEOFENCE_TAG, getString(R.string.geofences_not_removed))
-//            }
-//        }
-//    }
+
     //endregion
 }
