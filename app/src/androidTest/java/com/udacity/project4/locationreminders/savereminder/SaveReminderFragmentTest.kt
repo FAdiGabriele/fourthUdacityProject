@@ -20,14 +20,19 @@ import com.udacity.project4.locationreminders.CommonViewModel
 import com.udacity.project4.locationreminders.RemindersActivity
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.local.FakeDataSource
+import com.udacity.project4.locationreminders.data.local.LocalDB
+import com.udacity.project4.locationreminders.data.local.RemindersLocalRepository
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
+import com.udacity.project4.locationreminders.reminderslist.RemindersListViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import org.hamcrest.CoreMatchers.not
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
@@ -48,25 +53,22 @@ class SaveReminderFragmentTest : KoinTest {
     @get:Rule
     var activityTestRule: ActivityTestRule<RemindersActivity> = ActivityTestRule(RemindersActivity::class.java)
 
-
     @Before
     fun init() {
+
+        repository = FakeDataSource()
+
         stopKoin()//stop the original app koin
         appContext = ApplicationProvider.getApplicationContext()
         val myModule = module {
-            single {
-                SaveReminderViewModel(
-                        appContext,
-                        repository
-                )
-            }
 
-            single {
-                CommonViewModel(
-                        repository
-                )
+            viewModel { RemindersListViewModel(appContext, repository) }
 
-            }
+            single { SaveReminderViewModel(appContext, repository) }
+            single { CommonViewModel(repository) }
+
+            single { RemindersLocalRepository(get()) as ReminderDataSource }
+            single { LocalDB.createRemindersDao(appContext) }
 
         }
         //declare a new koin module
@@ -74,17 +76,17 @@ class SaveReminderFragmentTest : KoinTest {
             modules(listOf(myModule))
         }
 
-        repository = FakeDataSource()
-
         //clear the data to start fresh
         runBlocking {
             repository.deleteAllReminders()
         }
+
+
     }
 
 
     @Test
-    fun iFYouNotFillImportantField_ShowError(){
+    fun iFYouNotInsertTheName_ShowError(){
 
         //GIVEN the SaveReminderFragment
         val scenario = launchFragmentInContainer<SaveReminderFragment>(Bundle(), R.style.DifferentTheme)
@@ -98,8 +100,35 @@ class SaveReminderFragmentTest : KoinTest {
         //WHEN click on Fab
         onView(withId(R.id.saveReminder)).perform(click())
 
-        //THEN appears a Toast that suggest to  fill the mandatory field
-        onView(withText(R.string.err_enter_title)).inRoot(withDecorView(not(activityTestRule.activity.window.decorView))).check(matches(isDisplayed()))
+        //THEN appears a Snackbar that suggest to fill the mandatory field
+        onView(withId(com.google.android.material.R.id.snackbar_text)).check(matches(withText(R.string.err_enter_title)))
+//        onView(withText(R.string.err_enter_title)).inRoot(withDecorView(not(activityTestRule.activity.window.decorView))).check(matches(isDisplayed()))
+    }
+
+    @Test
+    fun iFYouNotInsertTheLocation_ShowError(){
+
+        //GIVEN data to insert
+        val titleToInsert = "TITLE1"
+
+        //GIVEN the SaveReminderFragment
+        val scenario = launchFragmentInContainer<SaveReminderFragment>(Bundle(), R.style.DifferentTheme)
+
+        //WHEN we do NOT insert the location
+        val navController = mock(NavController::class.java)
+        scenario.onFragment {
+            Navigation.setViewNavController(it.view!!, navController)
+        }
+
+        //WHEN we insert the title
+        onView(withId(R.id.reminderTitle)).perform(replaceText(titleToInsert))
+
+        //WHEN click on Fab
+        onView(withId(R.id.saveReminder)).perform(click())
+
+        //THEN appears a Snackbar that suggest to select a location
+        onView(withId(com.google.android.material.R.id.snackbar_text)).check(matches(withText(R.string.err_select_location)))
+//        onView(withText(R.string.err_select_location)).inRoot(withDecorView(not(activityTestRule.activity.window.decorView))).check(matches(isDisplayed()))
     }
 
     @Test
