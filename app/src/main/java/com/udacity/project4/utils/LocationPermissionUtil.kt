@@ -2,11 +2,14 @@ package com.udacity.project4.utils
 
 import android.Manifest
 import android.annotation.TargetApi
-import android.app.Activity
+import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
+import android.net.Uri
+import android.provider.Settings
 import android.util.Log
 import androidx.core.app.ActivityCompat
+import androidx.fragment.app.Fragment
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
@@ -16,79 +19,151 @@ import com.udacity.project4.R
 
 
 private val runningQOrLater = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q
+enum class PermissionType {
+    FOREGROUND_PERMISSION,
+    BACKGROUND_PERMISSION
+}
+lateinit var confirmSnackBar : Snackbar
 
-private fun askToTurnOnLocation(activity : Activity, resolve : Boolean = true){
-    val locationRequest = LocationRequest.create().apply {
-        priority = LocationRequest.PRIORITY_LOW_POWER
-    }
-    val builder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
 
-    val settingsClient = LocationServices.getSettingsClient(activity)
+fun askToTurnOnLocation(fragment : Fragment, methodToInvoke: () -> Unit  = {}, resolve : Boolean = true){
+        val locationRequest = LocationRequest.create().apply {
+            priority = LocationRequest.PRIORITY_LOW_POWER
+        }
+        val builder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
 
-    //variable that checks location settings
-    val locationSettingsResponseTask =
+        val settingsClient = LocationServices.getSettingsClient(fragment.requireActivity())
+
+        //variable that checks location settings
+        val locationSettingsResponseTask =
             settingsClient.checkLocationSettings(builder.build())
 
-    locationSettingsResponseTask.addOnFailureListener { exception ->
-        if (exception is ResolvableApiException && resolve){
-            try {
-                exception.startResolutionForResult(activity,
-                        Constants.REQUEST_TURN_DEVICE_LOCATION_ON)
-            } catch (sendEx: IntentSender.SendIntentException) {
-                Log.d(Constants.LOCATION_TAG, "Error getting location settings resolution: " + sendEx.message)
-            }
-        } else {
-            Snackbar.make(
-                    activity.findViewById(R.id.activity_layout),
+        locationSettingsResponseTask.addOnFailureListener { exception ->
+            if (exception is ResolvableApiException && resolve) {
+                try {
+                    exception.startResolutionForResult(
+                        fragment.requireActivity(),
+                        Constants.REQUEST_TURN_DEVICE_LOCATION_ON
+                    )
+                } catch (sendEx: IntentSender.SendIntentException) {
+                    Log.d(
+                        Constants.LOCATION_TAG,
+                        "Error getting location settings resolution: " + sendEx.message
+                    )
+                }
+            } else {
+                Snackbar.make(
+                    fragment.requireView(),
                     R.string.location_required_error, Snackbar.LENGTH_INDEFINITE
-            ).setAction(android.R.string.ok) {
-                askToTurnOnLocation(activity)
-            }.show()
+                ).setAction(android.R.string.ok) {
+                    askToTurnOnLocation(fragment)
+                }.show()
+            }
+        }
+        locationSettingsResponseTask.addOnSuccessListener {
+            Log.d(Constants.LOCATION_TAG, "Location activated")
+            methodToInvoke.invoke()
         }
     }
-    locationSettingsResponseTask.addOnSuccessListener {
-        Log.d(Constants.LOCATION_TAG, "Location activated")
+
+fun checkIfPermissionsAreGranted(fragment : Fragment,grantResults: IntArray, requestCode: Int, methodToInvoke: () -> Unit  = {}){
+
+    when(requestCode){
+        Constants.REQUEST_FOREGROUND_PERMISSIONS_REQUEST_CODE ->{
+            if(grantResults[Constants.LOCATION_PERMISSION_INDEX] == PackageManager.PERMISSION_GRANTED){
+                methodToInvoke.invoke()
+            }else{
+                requestForegroundLocationPermissions(fragment)
+            }
+        }
+        Constants.REQUEST_BACKGROUND_PERMISSION_RESULT_CODE ->{
+            if(grantResults[Constants.LOCATION_PERMISSION_INDEX] == PackageManager.PERMISSION_GRANTED){
+                methodToInvoke.invoke()
+            }else{
+                confirmSnackBar = Snackbar.make(
+                    fragment.requireView(),
+                    R.string.permission_denied_explanation,
+                    Snackbar.LENGTH_INDEFINITE
+                )
+
+                   confirmSnackBar .setAction(R.string.settings) {
+                        fragment.requireActivity().startActivity(Intent().apply {
+                            action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                            data = Uri.fromParts("package", fragment.requireActivity().applicationContext.packageName, null)
+                        })
+                    }.show()
+            }
+        }
+    }
+}
+
+fun doIfPermissionsAreGiven(fragment : Fragment, permissions: PermissionType, methodToInvoke : () -> Unit){
+    when(permissions){
+        PermissionType.BACKGROUND_PERMISSION-> {
+            if(runningQOrLater){
+                if(backgroundLocationPermissionApproved(fragment)){
+                    methodToInvoke.invoke()
+                }else{
+                    requestBackgroundLocationPermissions(fragment)
+                }
+            }else{
+                error("INVALID VERSION")
+            }
+        }
+        PermissionType.FOREGROUND_PERMISSION -> {
+            if(foregroundLocationPermissionApproved(fragment)){
+                methodToInvoke.invoke()
+            }else{
+                requestForegroundLocationPermissions(fragment)
+            }
+        }
     }
 }
 
 @TargetApi(29)
-private fun foregroundAndBackgroundLocationPermissionApproved(activity : Activity): Boolean {
-    val foregroundLocationApproved = (
-            PackageManager.PERMISSION_GRANTED ==
-                    ActivityCompat.checkSelfPermission(activity,
-                            Manifest.permission.ACCESS_FINE_LOCATION))
-    val backgroundPermissionApproved =
-            if (runningQOrLater) {
+fun backgroundLocationPermissionApproved(fragment : Fragment): Boolean {
+    return if (runningQOrLater) {
+        //it is required only from Android Q
+        PackageManager.PERMISSION_GRANTED ==
+                ActivityCompat.checkSelfPermission(
+                    fragment.requireActivity(), Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                )
+    } else {
+        true
+    }
+}
 
-                //it is required only from Android Q
-                PackageManager.PERMISSION_GRANTED ==
-                        ActivityCompat.checkSelfPermission(
-                                activity, Manifest.permission.ACCESS_BACKGROUND_LOCATION
-                        )
-            } else {
-                true
-            }
-    return foregroundLocationApproved && backgroundPermissionApproved
+
+fun foregroundLocationPermissionApproved(fragment : Fragment): Boolean {
+    return (ActivityCompat.checkSelfPermission(fragment.requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+                    ActivityCompat.checkSelfPermission(fragment.requireActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+}
+
+fun requestForegroundLocationPermissions(fragment : Fragment) {
+    Log.e("PAPOPE", "requestForegroundLocationPermissions")
+    if (foregroundLocationPermissionApproved(fragment))
+        return
+    val permissionsArray = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+    val resultCode =  Constants.REQUEST_FOREGROUND_PERMISSIONS_REQUEST_CODE
+
+    fragment.requestPermissions(
+        permissionsArray,
+        resultCode)
+
+    Log.e("PAPOPE", "wait for foreground")
 }
 
 @TargetApi(29 )
-private fun requestForegroundAndBackgroundLocationPermissions(activity : Activity) {
-    if (foregroundAndBackgroundLocationPermissionApproved(activity))
+fun requestBackgroundLocationPermissions(fragment : Fragment) {
+    Log.e("PAPOPE", "requestBackgroundLocationPermissions")
+    if (backgroundLocationPermissionApproved(fragment))
         return
-    var permissionsArray = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
-    val resultCode = when {
-        runningQOrLater -> {
-            permissionsArray += Manifest.permission.ACCESS_BACKGROUND_LOCATION
-            Constants.REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSION_RESULT_CODE
-        }
-        else -> Constants.REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE
-    }
-    Log.d(Constants.LOCATION_TAG, "Request foreground only location permission")
+    val permissionsArray = arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+    val resultCode =  Constants.REQUEST_BACKGROUND_PERMISSION_RESULT_CODE
 
-//        val dialog = Dialog(this)
-    ActivityCompat.requestPermissions(
-            activity,
-            permissionsArray,
-            resultCode
-    )
+    fragment.requestPermissions(
+        permissionsArray,
+        resultCode)
+
+    Log.e("PAPOPE", "wait for background" )
 }

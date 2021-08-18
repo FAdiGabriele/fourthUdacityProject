@@ -1,8 +1,12 @@
 package com.udacity.project4.locationreminders.savereminder
 
 import android.app.Application
+import android.util.Log
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.location.Geofence
+import com.google.android.gms.location.GeofencingRequest
 import com.google.android.gms.maps.model.PointOfInterest
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseViewModel
@@ -12,6 +16,7 @@ import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import kotlinx.coroutines.async
 import com.udacity.project4.locationreminders.data.dto.Result
+import com.udacity.project4.utils.Constants
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 
@@ -23,8 +28,6 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
     val selectedPOI = MutableLiveData<PointOfInterest>()
     val latitude = MutableLiveData<Double>()
     val longitude = MutableLiveData<Double>()
-
-
 
     /**
      * Clear the live data objects to start fresh next time the view model gets called
@@ -39,16 +42,6 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
     }
 
     /**
-     * Validate the entered data then saves the reminder data to the DataSource
-     */
-    fun validateAndSaveReminder(reminderData: ReminderDataItem, saveGeofenceMethod : () -> Unit) {
-        if (validateEnteredData(reminderData)) {
-            saveGeofenceMethod.invoke()
-            saveReminder(reminderData)
-        }
-    }
-
-    /**
      * Save the reminder to the data source
      */
     fun saveReminder(reminderData: ReminderDataItem) {
@@ -59,7 +52,6 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
             )
             showLoading.value = false
             showToast.value = app.getString(R.string.reminder_saved)
-            navigationCommand.value = NavigationCommand.Back
         }
     }
 
@@ -79,7 +71,7 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
         return true
     }
 
-    //Only fo rtesting purpose
+    //Only for testing purpose
     @ExperimentalCoroutinesApi
     fun checkSize(): Int{
         return viewModelScope.async {
@@ -87,4 +79,34 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
             list.data.size
         }.getCompleted()
     }
+
+
+
+    //region savingGeofence
+    val  geoFenceReady = MutableLiveData<Boolean>()
+    var geoFenceToAdd : GeofencingRequest? = null
+
+    fun createGeoFenceRequest(reminderData: ReminderDataItem) {
+
+        val geofence = Geofence.Builder()
+            .setRequestId(reminderData.id)
+            .setCircularRegion(reminderData.latitude!!,
+                reminderData.longitude!!,
+                Constants.GEOFENCE_RADIUS_IN_METERS
+            )
+            .setExpirationDuration(Constants.GEOFENCE_EXPIRATION_IN_MILLISECONDS)
+            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
+            .build()
+
+        Log.v(Constants.GEOFENCE_TAG, "Created Geofence with id ${geofence.requestId}")
+
+        geoFenceToAdd = GeofencingRequest.Builder()
+            .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+            .addGeofence(geofence)
+            .build()
+
+        geoFenceReady.value = true
+    }
+    //endregion
+
 }
