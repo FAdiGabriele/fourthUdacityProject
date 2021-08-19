@@ -10,6 +10,7 @@ import com.udacity.project4.locationreminders.MainCoroutineRule
 import com.udacity.project4.locationreminders.data.FakeReminderRepository
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import org.hamcrest.CoreMatchers.not
 import org.hamcrest.MatcherAssert
 import org.hamcrest.core.IsEqual
 import org.junit.Before
@@ -75,7 +76,33 @@ class RemindersListViewModelTest : AutoCloseKoinTest() {
         MatcherAssert.assertThat(remindersViewModel.remindersList.value, IsEqual(convertRepositoryTest()))
     }
 
-    fun convertRepositoryTest() : List<ReminderDataItem>{
+    @Test
+    fun getErrorWhenGetReminderList() {
+        reminderRepository.setReturnError(true)
+
+        remindersViewModel.loadReminders()
+
+        MatcherAssert.assertThat(remindersViewModel.remindersList.value, not(IsEqual(convertRepositoryTest())))
+    }
+
+    @Test
+    fun getReminder() {
+
+        remindersViewModel.loadReminders()
+
+        MatcherAssert.assertThat(remindersViewModel.remindersList.value?.get(0), IsEqual(ReminderDataItem.getFromReminderDTO(reminderRepository.reminderList[0])))
+    }
+
+    @Test
+    fun getErrorWhenGetReminder() {
+        reminderRepository.setReturnError(true)
+
+        remindersViewModel.loadReminders()
+
+        MatcherAssert.assertThat(remindersViewModel.remindersList.value?.get(0), not(ReminderDataItem.getFromReminderDTO(reminderRepository.reminderList[0])))
+    }
+
+    private fun convertRepositoryTest() : List<ReminderDataItem>{
         return listOf(
                 ReminderDataItem.getFromReminderDTO(reminderRepository.reminderList[0]),
                 ReminderDataItem.getFromReminderDTO(reminderRepository.reminderList[1]))

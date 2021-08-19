@@ -1,6 +1,7 @@
 package com.udacity.project4.locationreminders.savereminder
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -25,10 +26,10 @@ import com.udacity.project4.locationreminders.geofence.GeofenceTransitionsJobInt
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import com.udacity.project4.utils.*
 import org.koin.android.ext.android.inject
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class SaveReminderFragment : BaseFragment() {
-    //Get the view model this time as a single to be shared with the another fragment
-    override val _viewModel: SaveReminderViewModel by inject()
+    override val _viewModel: SaveReminderViewModel by viewModel()
     private lateinit var binding: FragmentSaveReminderBinding
     private lateinit var geofencingClient : GeofencingClient
     lateinit var reminderDataItem : ReminderDataItem
@@ -71,10 +72,6 @@ class SaveReminderFragment : BaseFragment() {
             val latitude = _viewModel.latitude.value
             val longitude = _viewModel.longitude.value
 
-
-//              okTODO:add a geofencing request
-//             okTODO: save the reminder to the local db
-
             reminderDataItem = ReminderDataItem(title,description,location,latitude,longitude)
 
 
@@ -87,6 +84,8 @@ class SaveReminderFragment : BaseFragment() {
             super.onDestroy()
             //make sure to clear the view model after destroy, as it's a single view model.
             _viewModel.onClear()
+            //it avoid context leak when snackbar is showed but we return back to ListFragment
+            confirmSnackBar?.dismiss()
         }
 
     private fun setObservers() {
@@ -138,7 +137,6 @@ class SaveReminderFragment : BaseFragment() {
         intent.putExtra(Constants.GEOFENCING_REQUEST, request)
         GeofenceTransitionsJobIntentService.enqueueWork(requireActivity(), intent)
         _viewModel.saveReminder(reminderData = reminderDataItem)
-        _viewModel.navigationCommand.value = NavigationCommand.Back
     }
 
     override fun onRequestPermissionsResult(
@@ -155,11 +153,5 @@ class SaveReminderFragment : BaseFragment() {
     }
 
     //endregion
-
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        confirmSnackBar.dismiss()
-    }
 
 }

@@ -64,7 +64,7 @@ class SaveReminderFragmentTest : KoinTest {
 
             viewModel { RemindersListViewModel(appContext, repository) }
 
-            single { SaveReminderViewModel(appContext, repository) }
+            viewModel { SaveReminderViewModel(appContext, repository) }
             single { CommonViewModel(repository) }
 
             single { RemindersLocalRepository(get()) as ReminderDataSource }

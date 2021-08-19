@@ -116,6 +116,10 @@ fun DataBindingIdlingResource.monitorFragment(fragmentScenario: FragmentScenario
     }
 }
 
+
+/**
+ * Search the element that corresponds at [position] in RecyclerView
+ */
 fun atPosition(position: Int, @NonNull itemMatcher: Matcher<View?>): Matcher<View?>? {
     checkNotNull(itemMatcher)
     return object : BoundedMatcher<View?, RecyclerView>(RecyclerView::class.java) {

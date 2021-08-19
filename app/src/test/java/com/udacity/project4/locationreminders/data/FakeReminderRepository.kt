@@ -6,15 +6,18 @@ import com.udacity.project4.locationreminders.data.dto.Result
 //Used for testing the real viewmodels
 class FakeReminderRepository : ReminderDataSource {
 
-    private val fakeReminder = ReminderDTO("fake1", "description1", "place1", 1.0, 1.0, "1")
-    private val fakeReminder2 = ReminderDTO("fake2", "description2", "place2", 1.0, 1.0, "2")
+    private var shouldReturnError = false
+
+    fun setReturnError(value: Boolean) {
+        shouldReturnError = value
+    }
 
     val reminderList = ArrayList<ReminderDTO>()
 
     override suspend fun getReminders(): Result<List<ReminderDTO>> {
-//        if (shouldReturnError) {
-//            return Result.Error("test Exception")
-//        }
+        if (shouldReturnError) {
+            return Result.Error("test Exception")
+        }
         return Result.Success(reminderList.toList())
     }
 
@@ -23,9 +26,9 @@ class FakeReminderRepository : ReminderDataSource {
     }
 
     override suspend fun getReminder(id: String): Result<ReminderDTO> {
-        //        if (shouldReturnError) {
-//            return Result.Error("test Exception")
-//        }
+        if (shouldReturnError) {
+            return Result.Error("test Exception")
+        }
         val result = reminderList.filter { it.id == id }
         return if(result.isNotEmpty())
             Result.Success(result[0])
@@ -42,6 +45,9 @@ class FakeReminderRepository : ReminderDataSource {
     }
 
     fun addSomeFakeData(){
+        val fakeReminder = ReminderDTO("fake1", "description1", "place1", 1.0, 1.0, "1")
+        val fakeReminder2 = ReminderDTO("fake2", "description2", "place2", 1.0, 1.0, "2")
+
         reminderList.add(fakeReminder)
         reminderList.add(fakeReminder2)
     }

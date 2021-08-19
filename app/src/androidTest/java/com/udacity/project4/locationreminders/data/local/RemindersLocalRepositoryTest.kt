@@ -59,7 +59,7 @@ class RemindersLocalRepositoryTest {
 
     // runBlocking is used here because of https://github.com/Kotlin/kotlinx.coroutines/issues/1204
     @Test
-    fun insertTaskAndGetById() = runBlocking {
+    fun insertReminderAndGetById() = runBlocking {
         // GIVEN - Insert a task.,
         val reminder = ReminderDTO("title", "description", "location",1.0, 1.0, "id")
         localDataSource.saveReminder(reminder)
@@ -79,7 +79,7 @@ class RemindersLocalRepositoryTest {
     }
 
     @Test
-    fun updateTaskAndGetById() = runBlocking {
+    fun updateReminderAndGetById() = runBlocking {
         // GIVEN - Insert a task.
         val reminder = ReminderDTO("title", "description", "location",1.0, 1.0, "unique_id")
         localDataSource.saveReminder(reminder)
@@ -98,5 +98,4 @@ class RemindersLocalRepositoryTest {
         assertThat(loaded.data.latitude, `is`(reminder2.latitude))
         assertThat(loaded.data.longitude, `is`(reminder2.longitude))
     }
-
 }

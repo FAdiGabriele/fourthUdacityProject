@@ -6,7 +6,17 @@ import com.udacity.project4.locationreminders.data.dto.Result
 //Used for testing the real repository
 class FakeDataSource(val reminderList: MutableList<ReminderDTO>? = mutableListOf()) : ReminderDataSource {
 
-    override suspend fun getReminders(): Result<List<ReminderDTO>> {
+    private var shouldReturnError = false
+
+    fun setReturnError(value: Boolean) {
+        shouldReturnError = value
+    }
+
+    override suspend fun getReminders(): Result<List<ReminderDTO>>{
+        if (shouldReturnError) {
+            return Result.Error("Test error")
+        }
+
         reminderList?.let { return Result.Success(ArrayList(it)) }
         return Result.Error("List of reminders not found")
     }
@@ -16,6 +26,10 @@ class FakeDataSource(val reminderList: MutableList<ReminderDTO>? = mutableListOf
     }
 
     override suspend fun getReminder(id: String): Result<ReminderDTO> {
+        if (shouldReturnError) {
+            return Result.Error("Test error")
+        }
+
         reminderList?.let {  list ->
 
             val filteredList = list.filter { singleReminder ->

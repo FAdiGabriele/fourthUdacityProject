@@ -76,14 +76,4 @@ class CommonViewModelTest : AutoCloseKoinTest() {
         MatcherAssert.assertThat(newRemindersListSize, IsEqual(1))
     }
 
-    @Test
-    fun createGeoFencingRequest(){
-
-        val newReminderDataItem = ReminderDataItem("casual_title", "casual_description", "casual_location", 2.0, 2.0, "casual_id")
-
-        commonViewModel.createGeoFenceRequest(newReminderDataItem)
-
-       MatcherAssert.assertThat(commonViewModel.geoFencerObserver.value?.geofences?.size, IsEqual(1))
-    }
-
 }

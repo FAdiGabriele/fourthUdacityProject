@@ -16,6 +16,7 @@ import com.udacity.project4.R
 import com.udacity.project4.locationreminders.CommonViewModel
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
+import com.udacity.project4.locationreminders.data.dto.Result
 import com.udacity.project4.locationreminders.data.local.FakeDataSource
 import com.udacity.project4.locationreminders.data.local.LocalDB
 import com.udacity.project4.locationreminders.data.local.RemindersLocalRepository
@@ -24,6 +25,7 @@ import com.udacity.project4.util.atPosition
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
+import org.hamcrest.CoreMatchers.not
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -121,6 +123,29 @@ class ReminderListFragmentTest : KoinTest {
         verify(navController).navigate(
             ReminderListFragmentDirections.toSaveReminder()
         )
+    }
+
+    @Test
+    fun getFakeErrorWhenGetAReminder()= runBlockingTest{
+
+        // GIVEN - A fake error
+        (repository as FakeDataSource).setReturnError(true)
+
+        // GIVEN - reminder to save
+        val reminder = ReminderDTO("title", "description", "location",1.0, 1.0, "id")
+        repository.saveReminder(reminder)
+
+        // WHEN - FragmentList starts
+        val scenario = launchFragmentInContainer<ReminderListFragment>(Bundle(), R.style.DifferentTheme)
+
+        val navController = mock(NavController::class.java)
+        scenario.onFragment {
+            Navigation.setViewNavController(it.view!!, navController)
+        }
+
+        // THEN - Verify that reminder is not present in RecyclerView
+        onView(withId(R.id.reminderssRecyclerView)).check(ViewAssertions.matches(not(atPosition(0, withText("title")))))
+
     }
 
 

@@ -9,6 +9,8 @@ import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.hamcrest.MatcherAssert
 import org.hamcrest.core.IsEqual
+import org.hamcrest.core.IsNot
+import org.hamcrest.core.IsNull
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -72,4 +74,13 @@ class SaveReminderViewModelTest : AutoCloseKoinTest() {
         MatcherAssert.assertThat(newSize, IsEqual(1))
     }
 
+    @Test
+    fun createGeoFencingRequest(){
+
+        val newReminderDataItem = ReminderDataItem("casual_title", "casual_description", "casual_location", 2.0, 2.0, "casual_id")
+
+        saveReminderViewModel.createGeoFenceRequest(newReminderDataItem)
+
+       MatcherAssert.assertThat(saveReminderViewModel.geoFenceToAdd, IsNot(IsNull()))
+    }
 }

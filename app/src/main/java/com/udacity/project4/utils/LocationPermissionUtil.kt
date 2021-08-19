@@ -23,7 +23,7 @@ enum class PermissionType {
     FOREGROUND_PERMISSION,
     BACKGROUND_PERMISSION
 }
-lateinit var confirmSnackBar : Snackbar
+var confirmSnackBar : Snackbar? = null
 
 
 fun askToTurnOnLocation(fragment : Fragment, methodToInvoke: () -> Unit  = {}, resolve : Boolean = true){
@@ -86,7 +86,7 @@ fun checkIfPermissionsAreGranted(fragment : Fragment,grantResults: IntArray, req
                     Snackbar.LENGTH_INDEFINITE
                 )
 
-                   confirmSnackBar .setAction(R.string.settings) {
+                   confirmSnackBar!!.setAction(R.string.settings) {
                         fragment.requireActivity().startActivity(Intent().apply {
                             action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
                             data = Uri.fromParts("package", fragment.requireActivity().applicationContext.packageName, null)

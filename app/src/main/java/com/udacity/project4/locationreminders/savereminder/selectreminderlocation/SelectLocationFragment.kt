@@ -1,17 +1,14 @@
 package com.udacity.project4.locationreminders.savereminder.selectreminderlocation
 
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context.LOCATION_SERVICE
-import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
 import android.util.Log
 import android.view.*
-import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -33,12 +30,13 @@ import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.utils.*
 import com.udacity.project4.utils.Constants.LOCATION_TAG
 import org.koin.android.ext.android.inject
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 
 class SelectLocationFragment : BaseFragment() , OnMapReadyCallback{
 
     //Use Koin to get the view model of the SaveReminder
-    override val _viewModel: SaveReminderViewModel by inject()
+    override val _viewModel: SaveReminderViewModel by viewModel()
     val commonViewModel: CommonViewModel by inject()
     private lateinit var binding: FragmentSelectLocationBinding
 

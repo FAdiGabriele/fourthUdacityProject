@@ -55,11 +55,41 @@ class DefaultReminderRepositoryTest {
 
     @ExperimentalCoroutinesApi
     @Test
+    fun getError_requestsAllReminders() = mainCoroutineRule.runBlockingTest {
+        fakeLocalDataSource.setReturnError(true)
+
+        val reminders = repositoryToTest.getReminders() as Result.Error
+
+        //
+        MatcherAssert.assertThat(reminders.message, IsEqual("Test error"))
+    }
+
+    @ExperimentalCoroutinesApi
+    @Test
     fun getTitleReminderFromID_requestsTitleFromID() = mainCoroutineRule.runBlockingTest {
 
         val reminder = repositoryToTest.getReminderById("0") as Result.Success<ReminderDTO>
 
         MatcherAssert.assertThat(reminder.data, IsEqual(reminderDTO0))
+    }
+
+    @ExperimentalCoroutinesApi
+    @Test
+    fun getRealError_requestsTitleFromID() = mainCoroutineRule.runBlockingTest {
+
+        val reminder = repositoryToTest.getReminderById("id") as Result.Error
+
+        MatcherAssert.assertThat(reminder.message, IsEqual("Reminder not found"))
+    }
+
+    @ExperimentalCoroutinesApi
+    @Test
+    fun getTestError_requestsTitleFromID() = mainCoroutineRule.runBlockingTest {
+        fakeLocalDataSource.setReturnError(true)
+
+        val reminder = repositoryToTest.getReminderById("0") as Result.Error
+
+        MatcherAssert.assertThat(reminder.message, IsEqual("Test error"))
     }
 
     @ExperimentalCoroutinesApi
