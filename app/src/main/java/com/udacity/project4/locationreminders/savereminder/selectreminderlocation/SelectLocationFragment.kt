@@ -31,10 +31,9 @@ import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.utils.*
 import com.udacity.project4.utils.Constants.LOCATION_TAG
 import org.koin.android.ext.android.inject
-import org.koin.androidx.viewmodel.ext.android.viewModel
 
 
-class SelectLocationFragment : BaseFragment() , OnMapReadyCallback{
+class SelectLocationFragment : BaseFragment() , OnMapReadyCallback {
 
     //Use Koin to get the view model of the SaveReminder
     override val _viewModel: SaveReminderViewModel by inject()

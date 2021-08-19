@@ -11,6 +11,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.annotation.NonNull
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
@@ -26,7 +27,6 @@ import com.udacity.project4.locationreminders.geofence.GeofenceTransitionsJobInt
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import com.udacity.project4.utils.*
 import org.koin.android.ext.android.inject
-import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class SaveReminderFragment : BaseFragment() {
     override val _viewModel: SaveReminderViewModel by inject()
@@ -72,7 +72,7 @@ class SaveReminderFragment : BaseFragment() {
             val latitude = _viewModel.latitude.value
             val longitude = _viewModel.longitude.value
 
-            reminderDataItem = ReminderDataItem(title,description,location,latitude,longitude)
+            reminderDataItem = ReminderDataItem(title, description, location, latitude, longitude)
 
 
             if(_viewModel.validateEnteredData(reminderDataItem))
@@ -90,9 +90,12 @@ class SaveReminderFragment : BaseFragment() {
 
     private fun setObservers() {
         _viewModel.geoFenceReady.observe(viewLifecycleOwner, Observer {
-            if(it){
+            if (it) {
                 _viewModel.geoFenceReady.value = false
-                if (backgroundLocationPermissionApproved(this) && foregroundLocationPermissionApproved(this)) {
+                if (backgroundLocationPermissionApproved(this) && foregroundLocationPermissionApproved(
+                        this
+                    )
+                ) {
                     addGeofence(_viewModel.geoFenceToAdd!!)
                 } else {
                     requestForegroundAndBackgroundLocationPermissions(this)
@@ -106,8 +109,11 @@ class SaveReminderFragment : BaseFragment() {
 
     //this suppres exist because in the manifest there is already the permission required, but a bug of Android Studio asks to insert another one
     @SuppressLint("MissingPermission")
-    fun addGeofence(request : GeofencingRequest){
-        if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+    fun addGeofence(request: GeofencingRequest){
+        if (ActivityCompat.checkSelfPermission(
+                requireActivity(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED) {
             return
         }
         geofencingClient.addGeofences(request, geofencePendingIntent)?.run {
@@ -149,14 +155,20 @@ class SaveReminderFragment : BaseFragment() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
-        if(permissionsAreGranted(this, grantResults,requestCode)){
+        if(permissionsAreGranted(this, grantResults, requestCode)){
             _viewModel.geoFenceReady.value = true
         }else{
-            Toast.makeText(requireContext(), R.string.location_permission_not_granted, Toast.LENGTH_LONG).show()
+            Toast.makeText(
+                requireContext(),
+                R.string.location_permission_not_granted,
+                Toast.LENGTH_LONG
+            ).show()
         }
 
     }
 
     //endregion
+
+
 
 }
