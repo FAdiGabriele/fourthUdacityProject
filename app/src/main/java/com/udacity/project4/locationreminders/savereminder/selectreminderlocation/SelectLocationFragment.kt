@@ -102,8 +102,10 @@ class SelectLocationFragment : BaseFragment() , OnMapReadyCallback {
                         map.animateCamera(lastCameraUpdate)
                     }
 
-                    //It is called for avoid crashing when we remove GPS position after select a position on a map on Android 9 or lower
+                    //It is called for avoid crashing on Android 9 or lower when we remove GPS position after select a position on a map
                     override fun onProviderDisabled(provider: String) {
+                        //super was removed
+
                         Log.e(LOCATION_TAG, "provide $provider disabled")
                     }
                 }
