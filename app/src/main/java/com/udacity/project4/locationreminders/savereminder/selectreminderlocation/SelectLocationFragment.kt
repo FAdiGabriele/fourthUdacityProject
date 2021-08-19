@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.content.Context.LOCATION_SERVICE
 import android.content.res.Resources
 import android.location.Location
+import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
 import android.util.Log
@@ -87,18 +88,34 @@ class SelectLocationFragment : BaseFragment() , OnMapReadyCallback {
             if (value) {
                 commonViewModel.locationRequestedAndApproved.value = false
 
-                locationManager
-                    .requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0f) { currentLocation ->
+
+                val locationListener : LocationListener = object : LocationListener{
+                    override fun onLocationChanged(location: Location) {
                         map.isMyLocationEnabled = true
 
-                        commonViewModel.lastLocation = currentLocation
+                        commonViewModel.lastLocation = location
                         val currentCoordinates =
-                            LatLng(currentLocation.latitude, currentLocation.longitude)
+                            LatLng(location.latitude, location.longitude)
                         val lastCameraUpdate =
                             CameraUpdateFactory.newLatLngZoom(currentCoordinates, zoomLevel)
                         map.moveCamera(lastCameraUpdate)
                         map.animateCamera(lastCameraUpdate)
                     }
+
+                    //It is called for avoid crashing when we remove GPS position after select a position on a map on Android 9 or lower
+                    override fun onProviderDisabled(provider: String) {
+                        Log.e(LOCATION_TAG, "provide $provider disabled")
+                    }
+                }
+
+                locationManager
+                    .requestLocationUpdates(
+                        LocationManager.NETWORK_PROVIDER,
+                        0,
+                        0f,
+                        locationListener
+                    )
+
             }
         })
     }
