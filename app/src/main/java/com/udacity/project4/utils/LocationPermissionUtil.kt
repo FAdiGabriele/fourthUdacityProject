@@ -154,7 +154,7 @@ fun requestForegroundLocationPermissions(fragment : Fragment) {
 @TargetApi(29 )
 fun requestForegroundAndBackgroundLocationPermissions(fragment : Fragment) {
     Log.e(Constants.LOCATION_TAG, "requestBackgroundLocationPermissions")
-    if (backgroundLocationPermissionApproved(fragment))
+    if (backgroundLocationPermissionApproved(fragment) && foregroundLocationPermissionApproved(fragment))
         return
     val permissionsArray = arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
     val resultCode =  Constants.REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSIONS_REQUEST_CODE

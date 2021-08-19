@@ -209,9 +209,6 @@ class SelectLocationFragment : BaseFragment() , OnMapReadyCallback {
     }
 
     private fun clickOnMap(latLng: LatLng, nameOfPlace: String = ""){
-
-        if(foregroundLocationPermissionApproved(this)) {
-            askToTurnOnLocation(this, {
                 map.clear()
 
                 val marker = MarkerOptions().position(latLng).title(nameOfPlace)
@@ -235,10 +232,7 @@ class SelectLocationFragment : BaseFragment() , OnMapReadyCallback {
                 if (!buttonShowed) {
                     binding.buttonConfirm.visibility = View.VISIBLE
                     buttonShowed = true
-                }})
-        }else{
-            Toast.makeText(requireContext(), R.string.location_permission_not_granted_selection, Toast.LENGTH_LONG). show()
-        }
+                }
     }
 
     @SuppressLint("MissingPermission")

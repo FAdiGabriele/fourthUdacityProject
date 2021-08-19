@@ -74,9 +74,15 @@ class SaveReminderFragment : BaseFragment() {
 
             reminderDataItem = ReminderDataItem(title, description, location, latitude, longitude)
 
-
-            if(_viewModel.validateEnteredData(reminderDataItem))
-                _viewModel.createGeoFenceRequest(reminderDataItem)
+            if(_viewModel.validateEnteredData(reminderDataItem)) {
+                if (backgroundLocationPermissionApproved(this)
+                    && foregroundLocationPermissionApproved(this)) {
+                    _viewModel.createGeoFenceRequest(reminderDataItem)
+                } else {
+                    requestForegroundAndBackgroundLocationPermissions(this)
+                    Log.e(Constants.LOCATION_TAG, "GeoFenceRequest refused")
+                }
+            }
         }
     }
 
@@ -92,15 +98,9 @@ class SaveReminderFragment : BaseFragment() {
         _viewModel.geoFenceReady.observe(viewLifecycleOwner, Observer {
             if (it) {
                 _viewModel.geoFenceReady.value = false
-                if (backgroundLocationPermissionApproved(this) && foregroundLocationPermissionApproved(
-                        this
-                    )
-                ) {
+
                     addGeofence(_viewModel.geoFenceToAdd!!)
-                } else {
-                    requestForegroundAndBackgroundLocationPermissions(this)
-                    Log.e(Constants.LOCATION_TAG, "GeoFenceRequest refused")
-                }
+
             }
         })
     }
@@ -157,14 +157,7 @@ class SaveReminderFragment : BaseFragment() {
 
         if(permissionsAreGranted(this, grantResults, requestCode)){
             _viewModel.geoFenceReady.value = true
-        }else{
-            Toast.makeText(
-                requireContext(),
-                R.string.location_permission_not_granted,
-                Toast.LENGTH_LONG
-            ).show()
         }
-
     }
 
     //endregion
