@@ -9,6 +9,7 @@ import android.location.LocationManager
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -36,7 +37,7 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 class SelectLocationFragment : BaseFragment() , OnMapReadyCallback{
 
     //Use Koin to get the view model of the SaveReminder
-    override val _viewModel: SaveReminderViewModel by viewModel()
+    override val _viewModel: SaveReminderViewModel by inject()
     val commonViewModel: CommonViewModel by inject()
     private lateinit var binding: FragmentSelectLocationBinding
 
@@ -94,8 +95,6 @@ class SelectLocationFragment : BaseFragment() , OnMapReadyCallback{
                         commonViewModel.lastLocation = currentLocation
                         val currentCoordinates =
                             LatLng(currentLocation.latitude, currentLocation.longitude)
-                        Log.e("PAPOPE", currentLocation.latitude.toString())
-                        Log.e("PAPOPE", currentLocation.longitude.toString())
                         val lastCameraUpdate =
                             CameraUpdateFactory.newLatLngZoom(currentCoordinates, zoomLevel)
                         map.moveCamera(lastCameraUpdate)
@@ -106,7 +105,6 @@ class SelectLocationFragment : BaseFragment() , OnMapReadyCallback{
     }
 
     private fun onLocationSelected() {
-
         _viewModel.latitude.value = latitude
         _viewModel.longitude.value = longitude
         _viewModel.selectedPOI.value = selectedPOI
@@ -147,13 +145,11 @@ class SelectLocationFragment : BaseFragment() , OnMapReadyCallback{
         setMapStyle(map)
 
         if(commonViewModel.lastLocation == null){
-            Log.e("PAPOPE", "lastCamera null")
             val rome = LatLng(41.8902, 12.4922)
             val cameraUpdate = CameraUpdateFactory.newLatLngZoom(rome, zoomLevel)
             map.moveCamera(cameraUpdate)
             map.animateCamera(cameraUpdate)
         }else{
-            Log.e("PAPOPE", "lastCamera NOT null")
             val reloadedPosition = LatLng(
                 commonViewModel.lastLocation!!.latitude,
                 commonViewModel.lastLocation!!.longitude
@@ -195,31 +191,36 @@ class SelectLocationFragment : BaseFragment() , OnMapReadyCallback{
     }
 
     private fun clickOnMap(latLng: LatLng, nameOfPlace: String = ""){
-        map.clear()
 
-        val marker = MarkerOptions().position(latLng).title(nameOfPlace)
-        map.addMarker(marker)
-        latitude = latLng.latitude
-        longitude = latLng.longitude
-        namePlace = if(nameOfPlace.isNotBlank()) nameOfPlace else {
+        if(foregroundLocationPermissionApproved(this)) {
+            askToTurnOnLocation(this, {
+                map.clear()
 
-            val shortLatitude = latitude.toString().substring(
-                0,
-                latitude.toString().indexOf(".") + 4
-            )
-            val shortLongitude = longitude.toString().substring(
-                0,
-                longitude.toString().indexOf(".") + 4
-            )
-            "(${shortLatitude},$shortLongitude)"
+                val marker = MarkerOptions().position(latLng).title(nameOfPlace)
+                map.addMarker(marker)
+                latitude = latLng.latitude
+                longitude = latLng.longitude
+                namePlace = if (nameOfPlace.isNotBlank()) nameOfPlace else {
+
+                    val shortLatitude = latitude.toString().substring(
+                        0,
+                        latitude.toString().indexOf(".") + 4
+                    )
+                    val shortLongitude = longitude.toString().substring(
+                        0,
+                        longitude.toString().indexOf(".") + 4
+                    )
+                    "(${shortLatitude},$shortLongitude)"
+                }
+
+
+                if (!buttonShowed) {
+                    binding.buttonConfirm.visibility = View.VISIBLE
+                    buttonShowed = true
+                }})
+        }else{
+            Toast.makeText(requireContext(), R.string.location_permission_not_granted_selection, Toast.LENGTH_LONG). show()
         }
-
-        if (!buttonShowed) {
-            binding.buttonConfirm.visibility = View.VISIBLE
-            buttonShowed = true
-        }
-
-
     }
 
     @SuppressLint("MissingPermission")
@@ -227,15 +228,12 @@ class SelectLocationFragment : BaseFragment() , OnMapReadyCallback{
         doIfPermissionsAreGiven(this, PermissionType.FOREGROUND_PERMISSION){
             askToTurnOnLocation(this, methodToInvoke = {
                 map.isMyLocationEnabled = true
-                Log.e("PAPOPE", "here")
                 fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
                             location?.let { currentLocation ->
                                 commonViewModel.lastLocation = currentLocation
                                 val currentCoordinates =
                                     LatLng(currentLocation.latitude, currentLocation.longitude)
-                                Log.e("PAPOPE", currentLocation.latitude.toString())
-                                Log.e("PAPOPE", currentLocation.longitude.toString())
-                                val lastCameraUpdate =
+                               val lastCameraUpdate =
                                     CameraUpdateFactory.newLatLngZoom(currentCoordinates, zoomLevel)
                                 map.moveCamera(lastCameraUpdate)
                                 map.animateCamera(lastCameraUpdate)
@@ -252,8 +250,10 @@ class SelectLocationFragment : BaseFragment() , OnMapReadyCallback{
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
-        checkIfPermissionsAreGranted(this, grantResults,requestCode){
+        if(permissionsAreGranted(this, grantResults,requestCode)){
             enableMyLocation()
+        }else{
+            Toast.makeText(requireContext(), R.string.location_permission_not_granted, Toast.LENGTH_LONG).show()
         }
 
     }

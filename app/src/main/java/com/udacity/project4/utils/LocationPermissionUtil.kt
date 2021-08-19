@@ -21,7 +21,7 @@ import com.udacity.project4.R
 private val runningQOrLater = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q
 enum class PermissionType {
     FOREGROUND_PERMISSION,
-    BACKGROUND_PERMISSION
+    FOREGROUND_AND_BACKGROUND_PERMISSION
 }
 var confirmSnackBar : Snackbar? = null
 
@@ -66,19 +66,15 @@ fun askToTurnOnLocation(fragment : Fragment, methodToInvoke: () -> Unit  = {}, r
         }
     }
 
-fun checkIfPermissionsAreGranted(fragment : Fragment,grantResults: IntArray, requestCode: Int, methodToInvoke: () -> Unit  = {}){
+fun permissionsAreGranted(fragment : Fragment,grantResults: IntArray, requestCode: Int) : Boolean{
 
     when(requestCode){
         Constants.REQUEST_FOREGROUND_PERMISSIONS_REQUEST_CODE ->{
-            if(grantResults[Constants.LOCATION_PERMISSION_INDEX] == PackageManager.PERMISSION_GRANTED){
-                methodToInvoke.invoke()
-            }else{
-                requestForegroundLocationPermissions(fragment)
-            }
+            return grantResults[Constants.LOCATION_PERMISSION_INDEX] == PackageManager.PERMISSION_GRANTED
         }
-        Constants.REQUEST_BACKGROUND_PERMISSION_RESULT_CODE ->{
+        Constants.REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSIONS_REQUEST_CODE ->{
             if(grantResults[Constants.LOCATION_PERMISSION_INDEX] == PackageManager.PERMISSION_GRANTED){
-                methodToInvoke.invoke()
+               return true
             }else{
                 confirmSnackBar = Snackbar.make(
                     fragment.requireView(),
@@ -95,16 +91,18 @@ fun checkIfPermissionsAreGranted(fragment : Fragment,grantResults: IntArray, req
             }
         }
     }
+
+    return false
 }
 
 fun doIfPermissionsAreGiven(fragment : Fragment, permissions: PermissionType, methodToInvoke : () -> Unit){
     when(permissions){
-        PermissionType.BACKGROUND_PERMISSION-> {
+        PermissionType.FOREGROUND_AND_BACKGROUND_PERMISSION-> {
             if(runningQOrLater){
                 if(backgroundLocationPermissionApproved(fragment)){
                     methodToInvoke.invoke()
                 }else{
-                    requestBackgroundLocationPermissions(fragment)
+                    requestForegroundAndBackgroundLocationPermissions(fragment)
                 }
             }else{
                 error("INVALID VERSION")
@@ -140,7 +138,7 @@ fun foregroundLocationPermissionApproved(fragment : Fragment): Boolean {
 }
 
 fun requestForegroundLocationPermissions(fragment : Fragment) {
-    Log.e("PAPOPE", "requestForegroundLocationPermissions")
+    Log.e(Constants.LOCATION_TAG, "requestForegroundLocationPermissions")
     if (foregroundLocationPermissionApproved(fragment))
         return
     val permissionsArray = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -150,20 +148,20 @@ fun requestForegroundLocationPermissions(fragment : Fragment) {
         permissionsArray,
         resultCode)
 
-    Log.e("PAPOPE", "wait for foreground")
+    Log.e(Constants.LOCATION_TAG, "wait for foreground")
 }
 
 @TargetApi(29 )
-fun requestBackgroundLocationPermissions(fragment : Fragment) {
-    Log.e("PAPOPE", "requestBackgroundLocationPermissions")
+fun requestForegroundAndBackgroundLocationPermissions(fragment : Fragment) {
+    Log.e(Constants.LOCATION_TAG, "requestBackgroundLocationPermissions")
     if (backgroundLocationPermissionApproved(fragment))
         return
-    val permissionsArray = arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-    val resultCode =  Constants.REQUEST_BACKGROUND_PERMISSION_RESULT_CODE
+    val permissionsArray = arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+    val resultCode =  Constants.REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSIONS_REQUEST_CODE
 
     fragment.requestPermissions(
         permissionsArray,
         resultCode)
 
-    Log.e("PAPOPE", "wait for background" )
+    Log.e(Constants.LOCATION_TAG, "wait for background" )
 }

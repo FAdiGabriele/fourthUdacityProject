@@ -163,6 +163,37 @@ class SaveReminderFragmentTest : KoinTest {
         Mockito.verify(navController).popBackStack()
     }
 
+    @Test
+    fun ifYouFillImportantField_ShowToast(){
 
+        //GIVEN data to insert
+        val reminderToSave = ReminderDataItem("TITLE1", "description", "LOCATION1", 1.0, 1.0, "id1")
+
+
+        //GIVEN the SaveReminderFragment
+        val scenario = launchFragmentInContainer<SaveReminderFragment>(Bundle(), R.style.DifferentTheme)
+
+        val navController = mock(NavController::class.java)
+
+        //WHEN  we insert the data
+        scenario.onFragment {
+            Navigation.setViewNavController(it.view!!, navController)
+
+            //faking insert of value from SelectLocationFragment
+            it._viewModel.reminderSelectedLocationStr.value = reminderToSave.location
+            it._viewModel.latitude.value = reminderToSave.latitude
+            it._viewModel.longitude.value = reminderToSave.longitude
+        }
+
+        onView(withId(R.id.reminderTitle)).perform(replaceText(reminderToSave.title))
+        onView(withId(R.id.reminderDescription)).perform(replaceText(reminderToSave.description))
+
+        //WHEN click on Fab
+        onView(withId(R.id.saveReminder)).perform(click())
+
+        //THEN appears a Toast that warn that reminder is svaed
+        //todo toast
+        onView(withId(com.google.android.material.R.id.snackbar_text)).check(matches(withText(R.string.err_select_location)))
+    }
 
 }

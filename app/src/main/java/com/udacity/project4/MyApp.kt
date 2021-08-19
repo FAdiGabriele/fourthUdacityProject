@@ -30,8 +30,8 @@ class MyApp : Application() {
                 )
             }
 
-            viewModel {
-                //This view model is declared singleton to be used across multiple fragments
+            //This view model is declared singleton to be used across multiple fragments
+            single {
                 SaveReminderViewModel(
                     get(),
                     get() as ReminderDataSource
@@ -39,15 +39,13 @@ class MyApp : Application() {
             }
 
 
-            //Declare singleton definitions to be later injected using by inject()
+            //This view model is declared singleton to be used across multiple fragments and activities
             single {
                 CommonViewModel(
                     get() as ReminderDataSource
                 )
 
             }
-
-
 
 
             single { RemindersLocalRepository(get()) as ReminderDataSource }

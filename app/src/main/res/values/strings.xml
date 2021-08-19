@@ -35,6 +35,8 @@
     <string name="welcome">Welcome</string>
     <string name="err_enter_title">Please enter title</string>
     <string name="err_select_location">Please select location</string>
+    <string name="location_permission_not_granted">Your position not find, please ensure that you have accepted location permission</string>
+    <string name="location_permission_not_granted_selection">Click not detected, please ensure that you have accepted location permission</string>
 
     <!-- detail screen -->
     <string name="reminder_details">Reminder Details</string>

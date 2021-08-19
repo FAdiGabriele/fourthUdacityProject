@@ -29,7 +29,7 @@ import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class SaveReminderFragment : BaseFragment() {
-    override val _viewModel: SaveReminderViewModel by viewModel()
+    override val _viewModel: SaveReminderViewModel by inject()
     private lateinit var binding: FragmentSaveReminderBinding
     private lateinit var geofencingClient : GeofencingClient
     lateinit var reminderDataItem : ReminderDataItem
@@ -92,10 +92,10 @@ class SaveReminderFragment : BaseFragment() {
         _viewModel.geoFenceReady.observe(viewLifecycleOwner, Observer {
             if(it){
                 _viewModel.geoFenceReady.value = false
-                if (backgroundLocationPermissionApproved(this)) {
+                if (backgroundLocationPermissionApproved(this) && foregroundLocationPermissionApproved(this)) {
                     addGeofence(_viewModel.geoFenceToAdd!!)
                 } else {
-                    requestBackgroundLocationPermissions(this)
+                    requestForegroundAndBackgroundLocationPermissions(this)
                     Log.e(Constants.LOCATION_TAG, "GeoFenceRequest refused")
                 }
             }
@@ -103,6 +103,9 @@ class SaveReminderFragment : BaseFragment() {
     }
 
     //region geofences
+
+    //this suppres exist because in the manifest there is already the permission required, but a bug of Android Studio asks to insert another one
+    @SuppressLint("MissingPermission")
     fun addGeofence(request : GeofencingRequest){
         if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return
@@ -146,8 +149,10 @@ class SaveReminderFragment : BaseFragment() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
-        checkIfPermissionsAreGranted(this, grantResults,requestCode){
+        if(permissionsAreGranted(this, grantResults,requestCode)){
             _viewModel.geoFenceReady.value = true
+        }else{
+            Toast.makeText(requireContext(), R.string.location_permission_not_granted, Toast.LENGTH_LONG).show()
         }
 
     }
