@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Add this specific AndroidManifest.xml into androidTest folder-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools"
+          package="com.udacity.project4">
+
+    <uses-sdk
+        android:targetSdkVersion="30"
+        android:minSdkVersion="16"
+        tools:overrideLibrary="android_libs.ub_uiautomator"/>
+
+</manifest>

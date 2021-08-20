@@ -16,8 +16,10 @@ import com.google.firebase.auth.FirebaseAuth
 import com.udacity.project4.R
 import com.udacity.project4.databinding.ActivityAuthenticationBinding
 import com.udacity.project4.databinding.FragmentStartBinding
+import com.udacity.project4.locationreminders.CommonViewModel
 import com.udacity.project4.locationreminders.RemindersActivity
 import com.udacity.project4.utils.Constants
+import org.koin.android.ext.android.inject
 
 /**
  * This class should be the starting point of the app, It asks the users to sign in / register, and redirects the
@@ -25,10 +27,12 @@ import com.udacity.project4.utils.Constants
  */
 class AuthenticationActivity : AppCompatActivity() {
 
+    private val commonViewModel: CommonViewModel by inject()
     lateinit var binding : ActivityAuthenticationBinding
     private val providers = arrayListOf(
             AuthUI.IdpConfig.EmailBuilder().build(), AuthUI.IdpConfig.GoogleBuilder().build()
     )
+
 
     var customLayout = AuthMethodPickerLayout.Builder(R.layout.firebase_autenticator_layout)
             .setGoogleButtonId(R.id.google_button)
@@ -67,7 +71,7 @@ class AuthenticationActivity : AppCompatActivity() {
                 // Sign in failed
                 Log.e(Constants.FIREBASE_TAG, "Sign in unsuccessful ${response?.error?.errorCode}")
 
-                Toast.makeText(this, resources.getText(R.string.login_failed), Toast.LENGTH_LONG).show()
+                commonViewModel.showErrorMessage.value = resources.getString(R.string.login_failed)
             }
         }
 

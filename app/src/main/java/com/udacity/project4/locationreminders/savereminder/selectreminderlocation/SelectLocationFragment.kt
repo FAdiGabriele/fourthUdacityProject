@@ -265,7 +265,7 @@ class SelectLocationFragment : BaseFragment() , OnMapReadyCallback {
         if(permissionsAreGranted(this, grantResults,requestCode)){
             enableMyLocation()
         }else{
-            Toast.makeText(requireContext(), R.string.location_permission_not_granted, Toast.LENGTH_LONG).show()
+            _viewModel.showErrorMessage.value = resources.getString(R.string.location_permission_not_granted)
         }
 
     }

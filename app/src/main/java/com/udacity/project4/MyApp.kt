@@ -42,6 +42,7 @@ class MyApp : Application() {
             //This view model is declared singleton to be used across multiple fragments and activities
             single {
                 CommonViewModel(
+                    get(),
                     get() as ReminderDataSource
                 )
 

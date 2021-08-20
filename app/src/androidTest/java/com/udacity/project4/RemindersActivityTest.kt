@@ -1,16 +1,16 @@
 package com.udacity.project4
 
-import android.app.Application
 import androidx.test.core.app.ActivityScenario
-import androidx.test.core.app.ApplicationProvider.getApplicationContext
 import androidx.test.espresso.Espresso
 import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.action.ViewActions
 import androidx.test.espresso.assertion.ViewAssertions
+import androidx.test.espresso.matcher.RootMatchers
 import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
+import androidx.test.rule.ActivityTestRule
 import com.udacity.project4.locationreminders.CommonViewModel
 import com.udacity.project4.locationreminders.RemindersActivity
 import com.udacity.project4.locationreminders.data.ReminderDataSource
@@ -18,12 +18,13 @@ import com.udacity.project4.locationreminders.data.local.LocalDB
 import com.udacity.project4.locationreminders.data.local.RemindersLocalRepository
 import com.udacity.project4.locationreminders.reminderslist.RemindersListViewModel
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
-import com.udacity.project4.util.DataBindingIdlingResource
-import com.udacity.project4.util.monitorActivity
+import com.udacity.project4.util.*
 import com.udacity.project4.utils.EspressoIdlingResource
 import kotlinx.coroutines.runBlocking
+import org.hamcrest.CoreMatchers
 import org.junit.After
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.koin.androidx.viewmodel.dsl.viewModel
@@ -41,7 +42,12 @@ class RemindersActivityTest :
     AutoCloseKoinTest() {// Extended Koin Test - embed autoclose @after method to close Koin after every test
 
     private lateinit var repository: ReminderDataSource
-    private lateinit var appContext: Application
+
+//    private lateinit var appContext: Application
+
+    //It is used getRule instead of appContext for giving to Koin a particular context so I don't get DeadObjectExceptions (ambiguous contexts)
+    @get:Rule
+    var activityTestRule: ActivityTestRule<RemindersActivity> = ActivityTestRule(RemindersActivity::class.java)
 
     /**
      * As we use Koin as a Service Locator Library to develop our code, we'll also use Koin to test our code.
@@ -50,29 +56,30 @@ class RemindersActivityTest :
     @Before
     fun init() {
         stopKoin()//stop the original app koin
-        appContext = getApplicationContext()
+//        appContext = getApplicationContext()
         val myModule = module {
             viewModel {
                 RemindersListViewModel(
-                    appContext,
+                    activityTestRule.activity.application,
                     get() as ReminderDataSource
                 )
             }
-            viewModel {
+            single {
                 SaveReminderViewModel(
-                    appContext,
+                    activityTestRule.activity.application,
                     get() as ReminderDataSource
                 )
             }
 
             single {
                 CommonViewModel(
+                    activityTestRule.activity.application,
                     get() as ReminderDataSource
                 )
 
             }
             single { RemindersLocalRepository(get()) as ReminderDataSource }
-            single { LocalDB.createRemindersDao(appContext) }
+            single { LocalDB.createRemindersDao(activityTestRule.activity.application) }
         }
         //declare a new koin module
         startKoin {
@@ -123,7 +130,9 @@ class RemindersActivityTest :
         Espresso.onView(withId(R.id.selectLocation)).perform(ViewActions.click())
 
 
-        //THEN It should open the SelectLocationFragment,else the test fail
+        //WHEN we give full permissions to application
+        grantPermissionsIfRequested(PermissionOptions.FOREGROUND_AND_BACKGROUND)
+        turnOnPositionIfRequested(LocationsOptions.TURN_ON)
 
         //THEN checking if is visible map on Layout
         Espresso.onView(withId(R.id.map)).check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
@@ -131,7 +140,7 @@ class RemindersActivityTest :
         Espresso.onView(withId(R.id.map)).perform(ViewActions.click())
 
         //Here we wait for map loading and update the UI
-        Thread.sleep(1000)
+        Thread.sleep(2000)
         //THEN It should appears a button, else the test fail
         Espresso.onView(withId(R.id.button_confirm)).check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
 
@@ -148,6 +157,11 @@ class RemindersActivityTest :
         //WHEN we click on FAB
         Espresso.onView(withId(R.id.saveReminder)).perform(ViewActions.click())
 
+        //THEN appears a Toast that warn that geofence is entered
+        Espresso.onView(ViewMatchers.withText(R.string.geofence_entered))
+            .inRoot(RootMatchers.withDecorView(CoreMatchers.not(activityTestRule.activity.window.decorView)))
+            .check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
+
         //THEN It should open the ReminderListFragment,else the test fail
         //THEN we check if the new reminder is created,  else the test fail
         Espresso.onView(ViewMatchers.withText("NEW TITLE"))
@@ -157,5 +171,6 @@ class RemindersActivityTest :
 
         activityScenario.close()
     }
+
 
 }

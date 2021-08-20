@@ -62,13 +62,13 @@ class ReminderDescriptionActivity : AppCompatActivity() {
         return if(intent != null && intent.hasExtra(EXTRA_ReminderDataItem)){
             showedReminderDataItem = intent.getSerializableExtra(EXTRA_ReminderDataItem) as ReminderDataItem?
             if(showedReminderDataItem == null){
-                Toast.makeText(this, "error null", Toast.LENGTH_SHORT).show()
+                commonViewModel.showErrorMessage. value = "error null"
                 true
             }else{
                 false
             }
         }else{
-            Toast.makeText(this, "error", Toast.LENGTH_SHORT).show()
+            commonViewModel.showErrorMessage.value = "error"
             true
         }
     }

@@ -28,7 +28,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import org.hamcrest.CoreMatchers.not
 import org.junit.Before
-import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -64,8 +63,8 @@ class SaveReminderFragmentTest : KoinTest {
 
             viewModel { RemindersListViewModel(appContext, repository) }
 
-            viewModel { SaveReminderViewModel(appContext, repository) }
-            single { CommonViewModel(repository) }
+            single { SaveReminderViewModel(appContext, repository) }
+            single { CommonViewModel(appContext, repository) }
 
             single { RemindersLocalRepository(get()) as ReminderDataSource }
             single { LocalDB.createRemindersDao(appContext) }
@@ -89,7 +88,10 @@ class SaveReminderFragmentTest : KoinTest {
     fun iFYouNotInsertTheName_ShowError(){
 
         //GIVEN the SaveReminderFragment
-        val scenario = launchFragmentInContainer<SaveReminderFragment>(Bundle(), R.style.DifferentTheme)
+        val scenario = launchFragmentInContainer<SaveReminderFragment>(
+            Bundle(),
+            R.style.DifferentTheme
+        )
 
         //WHEN we do NOT insert the data
         val navController = mock(NavController::class.java)
@@ -112,7 +114,10 @@ class SaveReminderFragmentTest : KoinTest {
         val titleToInsert = "TITLE1"
 
         //GIVEN the SaveReminderFragment
-        val scenario = launchFragmentInContainer<SaveReminderFragment>(Bundle(), R.style.DifferentTheme)
+        val scenario = launchFragmentInContainer<SaveReminderFragment>(
+            Bundle(),
+            R.style.DifferentTheme
+        )
 
         //WHEN we do NOT insert the location
         val navController = mock(NavController::class.java)
@@ -139,7 +144,10 @@ class SaveReminderFragmentTest : KoinTest {
 
 
         //GIVEN the SaveReminderFragment
-        val scenario = launchFragmentInContainer<SaveReminderFragment>(Bundle(), R.style.DifferentTheme)
+        val scenario = launchFragmentInContainer<SaveReminderFragment>(
+            Bundle(),
+            R.style.DifferentTheme
+        )
 
         val navController = mock(NavController::class.java)
 
@@ -171,7 +179,10 @@ class SaveReminderFragmentTest : KoinTest {
 
 
         //GIVEN the SaveReminderFragment
-        val scenario = launchFragmentInContainer<SaveReminderFragment>(Bundle(), R.style.DifferentTheme)
+        val scenario = launchFragmentInContainer<SaveReminderFragment>(
+            Bundle(),
+            R.style.DifferentTheme
+        )
 
         val navController = mock(NavController::class.java)
 
@@ -183,6 +194,7 @@ class SaveReminderFragmentTest : KoinTest {
             it._viewModel.reminderSelectedLocationStr.value = reminderToSave.location
             it._viewModel.latitude.value = reminderToSave.latitude
             it._viewModel.longitude.value = reminderToSave.longitude
+
         }
 
         onView(withId(R.id.reminderTitle)).perform(replaceText(reminderToSave.title))
@@ -191,9 +203,10 @@ class SaveReminderFragmentTest : KoinTest {
         //WHEN click on Fab
         onView(withId(R.id.saveReminder)).perform(click())
 
-        //THEN appears a Toast that warn that reminder is svaed
-        //todo toast
-        onView(withId(com.google.android.material.R.id.snackbar_text)).check(matches(withText(R.string.err_select_location)))
+        //THEN appears a Toast that warn that geofence is entered
+        onView(withText(R.string.geofence_entered))
+            .inRoot(withDecorView(not(activityTestRule.activity.window.decorView)))
+            .check(matches(isDisplayed()))
     }
 
 }

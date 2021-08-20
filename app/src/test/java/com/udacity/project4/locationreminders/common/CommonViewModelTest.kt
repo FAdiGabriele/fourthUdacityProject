@@ -1,5 +1,6 @@
 package com.udacity.project4.locationreminders.common
 
+import android.app.Application
 import android.os.Build
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
@@ -32,18 +33,10 @@ class CommonViewModelTest : AutoCloseKoinTest() {
 
     // Use a fake repository to be injected into the viewmodel
     lateinit var reminderRepository: FakeReminderRepository
-
+    private lateinit var appContext: Application
 
     // Subject under test
     private val commonViewModel: CommonViewModel by inject()
-
-    private val module : Module =  module {
-        single{
-            CommonViewModel(
-                reminderRepository
-            )
-        }
-    }
 
 
     @ExperimentalCoroutinesApi
@@ -57,6 +50,15 @@ class CommonViewModelTest : AutoCloseKoinTest() {
         reminderRepository.addSomeFakeData()
 
         stopKoin()
+        appContext = ApplicationProvider.getApplicationContext()
+        val module : Module =  module {
+            single{
+                CommonViewModel(
+                    appContext,
+                    reminderRepository
+                )
+            }
+        }
         startKoin {
             androidContext(ApplicationProvider.getApplicationContext())
             modules(module)

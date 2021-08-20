@@ -94,13 +94,20 @@ class SaveReminderFragment : BaseFragment() {
             confirmSnackBar?.dismiss()
         }
 
+    override fun onResume() {
+        super.onResume()
+
+        //it allow to the indefinite Snackbar to disappear when permissions granted
+        if(foregroundLocationPermissionApproved(this) && backgroundLocationPermissionApproved(this)){
+            confirmSnackBar?.dismiss()
+        }
+    }
+
     private fun setObservers() {
         _viewModel.geoFenceReady.observe(viewLifecycleOwner, Observer {
             if (it) {
                 _viewModel.geoFenceReady.value = false
-
                     addGeofence(_viewModel.geoFenceToAdd!!)
-
             }
         })
     }
@@ -118,11 +125,7 @@ class SaveReminderFragment : BaseFragment() {
         }
         geofencingClient.addGeofences(request, geofencePendingIntent)?.run {
             addOnSuccessListener {
-                Toast.makeText(
-                    requireActivity(), R.string.geofence_entered,
-                    Toast.LENGTH_SHORT
-                )
-                    .show()
+                _viewModel.showToast.value  = resources.getString(R.string.geofence_entered)
                 Log.d(
                     Constants.GEOFENCE_TAG,
                     "Add Geofence with id: ${request.geofences.last().requestId}"
@@ -130,10 +133,8 @@ class SaveReminderFragment : BaseFragment() {
                 startGeofencingService(request)
             }
             addOnFailureListener {
-                Toast.makeText(
-                    requireActivity(), R.string.geofences_not_added,
-                    Toast.LENGTH_SHORT
-                ).show()
+                _viewModel.showErrorMessage.value = resources.getString(R.string.geofences_not_added)
+
                 if ((it.message != null)) {
                     Log.e(Constants.GEOFENCE_TAG, "message: ${it.message}")
                 }

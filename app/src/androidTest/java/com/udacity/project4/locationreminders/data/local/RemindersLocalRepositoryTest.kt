@@ -78,6 +78,23 @@ class RemindersLocalRepositoryTest {
 
     }
 
+
+    @Test
+    fun emptyList_getErrorWhenGetReminderWithId() = runBlocking{
+        val loaded = localDataSource.getReminder("another id") as Result.Error
+        assertThat(loaded.message,  `is`("Reminder not found!"))
+    }
+
+    @Test
+    fun insertReminder_getErrorWhenGetReminderWithWrongId()  = runBlocking{
+        val reminder = ReminderDTO("title", "description", "location",1.0, 1.0, "id")
+        localDataSource.saveReminder(reminder)
+
+        // WHEN - Get the task by id from the database.
+        val loaded = localDataSource.getReminder("another id") as Result.Error
+        assertThat(loaded.message,  `is`("Reminder not found!"))
+    }
+
     @Test
     fun updateReminderAndGetById() = runBlocking {
         // GIVEN - Insert a task.

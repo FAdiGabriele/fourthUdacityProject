@@ -52,6 +52,7 @@ fun askToTurnOnLocation(fragment : Fragment, methodToInvoke: () -> Unit  = {}, r
                     )
                 }
             } else {
+                //it's a custom Snackbar with an action
                 Snackbar.make(
                     fragment.requireView(),
                     R.string.location_required_error, Snackbar.LENGTH_INDEFINITE
@@ -76,6 +77,7 @@ fun permissionsAreGranted(fragment : Fragment,grantResults: IntArray, requestCod
             if(grantResults[Constants.LOCATION_PERMISSION_INDEX] == PackageManager.PERMISSION_GRANTED){
                return true
             }else{
+                //it's a custom Snackbar with an action
                 confirmSnackBar = Snackbar.make(
                     fragment.requireView(),
                     R.string.permission_denied_explanation,
