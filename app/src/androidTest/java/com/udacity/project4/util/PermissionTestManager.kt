@@ -24,7 +24,7 @@ enum class LocationsOptions{
     KEEP_OFF
 }
 
-fun grantPermissionsIfRequested(permissionOption: PermissionOptions) {
+fun grantPermissionsIfRequested(permissionOption: PermissionOptions) : Boolean {
 
     if (Build.VERSION.SDK_INT >= 23) {
         val textButtonToClick = when{
@@ -69,11 +69,15 @@ fun grantPermissionsIfRequested(permissionOption: PermissionOptions) {
         if (allowPermissions.exists()) {
             try {
                 allowPermissions.click()
+                return true
             } catch (e: UiObjectNotFoundException) {
                 Log.e("Test_TAG", "No permission dialog found.")
             }
+        }else{
+            return false
         }
     }
+    return false
 }
 
 fun turnOnPositionIfRequested(locationsOption: LocationsOptions) : Boolean{
@@ -103,20 +107,20 @@ fun turnOnPositionIfRequested(locationsOption: LocationsOptions) : Boolean{
     return true
 }
 
-fun resetAllPermissions(){
-    if(runningQOrLater) {
-        InstrumentationRegistry.getInstrumentation().uiAutomation
-            .executeShellCommand("pm revoke ${androidx.test.InstrumentationRegistry.getTargetContext().packageName} android.permission.ACCESS_BACKGROUND_LOCATION")
-    }
+//fun resetAllPermissions(){
+//    if(runningQOrLater) {
+//        InstrumentationRegistry.getInstrumentation().uiAutomation
+//            .executeShellCommand("pm revoke ${androidx.test.InstrumentationRegistry.getTargetContext().packageName} android.permission.ACCESS_BACKGROUND_LOCATION")
+//    }
+//
+//    InstrumentationRegistry.getInstrumentation().uiAutomation.
+//    executeShellCommand("pm revoke ${androidx.test.InstrumentationRegistry.getTargetContext().packageName} android.permission.ACCESS_FINE_LOCATION")
+//    InstrumentationRegistry.getInstrumentation().uiAutomation.
+//    executeShellCommand("pm revoke ${androidx.test.InstrumentationRegistry.getTargetContext().packageName} android.permission.ACCESS_COARSE_LOCATION")
+//}
 
-    InstrumentationRegistry.getInstrumentation().uiAutomation.
-    executeShellCommand("pm revoke ${androidx.test.InstrumentationRegistry.getTargetContext().packageName} android.permission.ACCESS_FINE_LOCATION")
-    InstrumentationRegistry.getInstrumentation().uiAutomation.
-    executeShellCommand("pm revoke ${androidx.test.InstrumentationRegistry.getTargetContext().packageName} android.permission.ACCESS_COARSE_LOCATION")
-}
 
-
-fun checkIfLocationIsEnabled(context : Context): Boolean{
+fun isLocationEnabled(context : Context): Boolean{
     val lm = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
     var gps_enabled = false
     var network_enabled = false
@@ -127,6 +131,6 @@ fun checkIfLocationIsEnabled(context : Context): Boolean{
     } catch (ex: Exception) {
     }
 
-    return !(!gps_enabled && !network_enabled)
+    return gps_enabled || network_enabled
 }
 

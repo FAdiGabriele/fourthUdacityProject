@@ -14,28 +14,22 @@ import androidx.test.espresso.matcher.RootMatchers.withDecorView
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.MediumTest
-import androidx.test.rule.ActivityTestRule
 import com.udacity.project4.R
-import com.udacity.project4.locationreminders.CommonViewModel
-import com.udacity.project4.locationreminders.RemindersActivity
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.local.FakeDataSource
-import com.udacity.project4.locationreminders.data.local.LocalDB
-import com.udacity.project4.locationreminders.data.local.RemindersLocalRepository
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
-import com.udacity.project4.locationreminders.reminderslist.RemindersListViewModel
+import com.udacity.project4.util.PermissionOptions
+import com.udacity.project4.util.isLocationEnabled
+import com.udacity.project4.util.grantPermissionsIfRequested
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import org.hamcrest.CoreMatchers.not
-import org.junit.Before
-import org.junit.Rule
-import org.junit.Test
+import org.junit.*
 import org.junit.runner.RunWith
-import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
-import org.koin.test.KoinTest
+import org.koin.test.AutoCloseKoinTest
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
 
@@ -43,31 +37,25 @@ import org.mockito.Mockito.mock
 @ExperimentalCoroutinesApi
 @RunWith(AndroidJUnit4::class)
 @MediumTest //UI Testing
-class SaveReminderFragmentTest : KoinTest {
+class SaveReminderFragmentTest : AutoCloseKoinTest() {
 
 
     private lateinit var repository: ReminderDataSource
     private lateinit var appContext: Application
 
-    @get:Rule
-    var activityTestRule: ActivityTestRule<RemindersActivity> = ActivityTestRule(RemindersActivity::class.java)
-
     @Before
     fun init() {
-
         repository = FakeDataSource()
 
         stopKoin()//stop the original app koin
         appContext = ApplicationProvider.getApplicationContext()
         val myModule = module {
 
-            viewModel { RemindersListViewModel(appContext, repository) }
+//            viewModel { RemindersListViewModel(appContext, repository) }
 
             single { SaveReminderViewModel(appContext, repository) }
-            single { CommonViewModel(appContext, repository) }
+//            single { CommonViewModel(appContext, repository) }
 
-            single { RemindersLocalRepository(get()) as ReminderDataSource }
-            single { LocalDB.createRemindersDao(appContext) }
 
         }
         //declare a new koin module
@@ -80,9 +68,7 @@ class SaveReminderFragmentTest : KoinTest {
             repository.deleteAllReminders()
         }
 
-
     }
-
 
     @Test
     fun iFYouNotInsertTheName_ShowError(){
@@ -105,6 +91,7 @@ class SaveReminderFragmentTest : KoinTest {
         //THEN appears a Snackbar that suggest to fill the mandatory field
         onView(withId(com.google.android.material.R.id.snackbar_text)).check(matches(withText(R.string.err_enter_title)))
 //        onView(withText(R.string.err_enter_title)).inRoot(withDecorView(not(activityTestRule.activity.window.decorView))).check(matches(isDisplayed()))
+
     }
 
     @Test
@@ -134,6 +121,7 @@ class SaveReminderFragmentTest : KoinTest {
         //THEN appears a Snackbar that suggest to select a location
         onView(withId(com.google.android.material.R.id.snackbar_text)).check(matches(withText(R.string.err_select_location)))
 //        onView(withText(R.string.err_select_location)).inRoot(withDecorView(not(activityTestRule.activity.window.decorView))).check(matches(isDisplayed()))
+
     }
 
     @Test
@@ -150,11 +138,11 @@ class SaveReminderFragmentTest : KoinTest {
         )
 
         val navController = mock(NavController::class.java)
-
+        lateinit var fragment : SaveReminderFragment
         //WHEN  we insert the data
         scenario.onFragment {
             Navigation.setViewNavController(it.view!!, navController)
-
+            fragment = it
             //faking insert of value from SelectLocationFragment
             it._viewModel.reminderSelectedLocationStr.value = reminderToSave.location
             it._viewModel.latitude.value = reminderToSave.latitude
@@ -168,7 +156,12 @@ class SaveReminderFragmentTest : KoinTest {
         onView(withId(R.id.saveReminder)).perform(click())
 
         //THEN it navigate back to ReminderListFragment
-        Mockito.verify(navController).popBackStack()
+        grantPermissionsIfRequested(PermissionOptions.FOREGROUND_AND_BACKGROUND)
+
+        if(isLocationEnabled(fragment.requireContext())){
+            Mockito.verify(navController).popBackStack()
+        }
+
     }
 
     @Test
@@ -185,11 +178,11 @@ class SaveReminderFragmentTest : KoinTest {
         )
 
         val navController = mock(NavController::class.java)
-
+        lateinit var fragment : SaveReminderFragment
         //WHEN  we insert the data
         scenario.onFragment {
             Navigation.setViewNavController(it.view!!, navController)
-
+            fragment = it
             //faking insert of value from SelectLocationFragment
             it._viewModel.reminderSelectedLocationStr.value = reminderToSave.location
             it._viewModel.latitude.value = reminderToSave.latitude
@@ -203,10 +196,21 @@ class SaveReminderFragmentTest : KoinTest {
         //WHEN click on Fab
         onView(withId(R.id.saveReminder)).perform(click())
 
+        grantPermissionsIfRequested(PermissionOptions.FOREGROUND_AND_BACKGROUND)
+
         //THEN appears a Toast that warn that geofence is entered
-        onView(withText(R.string.geofence_entered))
-            .inRoot(withDecorView(not(activityTestRule.activity.window.decorView)))
+
+        if(isLocationEnabled(fragment.requireContext())){
+            onView(withText(R.string.geofence_entered))
+                .inRoot(withDecorView(not(fragment.requireActivity().window.decorView)))
+                .check(matches(isDisplayed()))
+        } else {
+        onView(withText(R.string.geofences_not_added))
+            .inRoot(withDecorView(not(fragment.requireActivity().window.decorView)))
             .check(matches(isDisplayed()))
+        }
     }
+
+
 
 }

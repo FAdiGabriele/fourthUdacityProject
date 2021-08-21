@@ -18,8 +18,7 @@ import com.udacity.project4.locationreminders.data.local.LocalDB
 import com.udacity.project4.locationreminders.data.local.RemindersLocalRepository
 import com.udacity.project4.locationreminders.reminderslist.RemindersListViewModel
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
-import com.udacity.project4.util.DataBindingIdlingResource
-import com.udacity.project4.util.monitorActivity
+import com.udacity.project4.util.*
 import com.udacity.project4.utils.EspressoIdlingResource
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -58,7 +57,7 @@ class RemindersActivityTest :
                     get() as ReminderDataSource
                 )
             }
-            viewModel {
+            single {
                 SaveReminderViewModel(
                     appContext,
                     get() as ReminderDataSource
@@ -102,6 +101,8 @@ class RemindersActivityTest :
         IdlingRegistry.getInstance().unregister(dataBindingIdlingResource)
     }
 
+
+
     @Test
     fun createOneReminder() {
         // GIVEN  the activity reminder
@@ -125,6 +126,8 @@ class RemindersActivityTest :
 
 
         //THEN It should open the SelectLocationFragment,else the test fail
+        grantPermissionsIfRequested(PermissionOptions.FOREGROUND_AND_BACKGROUND)
+        if(isLocationEnabled(dataBindingIdlingResource.activity)) turnOnPositionIfRequested(LocationsOptions.TURN_ON)
 
         //THEN checking if is visible map on Layout
         Espresso.onView(withId(R.id.map)).check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
@@ -132,7 +135,7 @@ class RemindersActivityTest :
         Espresso.onView(withId(R.id.map)).perform(ViewActions.click())
 
         //Here we wait for map loading and update the UI
-        Thread.sleep(1000)
+        Thread.sleep(3000)
         //THEN It should appears a button, else the test fail
         Espresso.onView(withId(R.id.button_confirm)).check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
 
