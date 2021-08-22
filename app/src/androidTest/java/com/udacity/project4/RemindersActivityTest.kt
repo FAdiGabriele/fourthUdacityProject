@@ -137,6 +137,10 @@ class RemindersActivityTest :
 
         //THEN checking if is visible map on Layout
         Espresso.onView(withId(R.id.map)).check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
+
+        //Here we wait for map loading and update the position
+        delay(4000)
+
         //WHEN we click on map
         Espresso.onView(withId(R.id.map)).perform(ViewActions.click())
 

@@ -94,6 +94,8 @@ class SelectLocationFragmentTest : AutoCloseKoinTest() {
                     .inRoot(RootMatchers.withDecorView(CoreMatchers.not(fragment.requireActivity().window.decorView)))
                     .check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
             }else{
+                if(!isLocationEnabled(fragment.requireActivity())) turnOnPositionIfRequested(LocationsOptions.TURN_ON)
+
                 //else
                 //THEN checking if is visible map on Layout
                 Espresso.onView(ViewMatchers.withId(R.id.map)).check(ViewAssertions.matches(ViewMatchers.isDisplayed()))

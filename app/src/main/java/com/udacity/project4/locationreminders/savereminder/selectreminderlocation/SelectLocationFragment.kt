@@ -8,13 +8,12 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
+import android.os.Looper
 import android.util.Log
 import android.view.*
-import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -89,7 +88,9 @@ class SelectLocationFragment : BaseFragment() , OnMapReadyCallback {
                 commonViewModel.locationRequestedAndApproved.value = false
 
 
-                val locationListener : LocationListener = object : LocationListener{
+                val locationListener: LocationListener = object : LocationListener {
+                    override fun onProviderEnabled(provider: String) {}
+
                     override fun onLocationChanged(location: Location) {
                         map.isMyLocationEnabled = true
 
@@ -240,16 +241,17 @@ class SelectLocationFragment : BaseFragment() , OnMapReadyCallback {
         doIfPermissionsAreGiven(this, PermissionType.FOREGROUND_PERMISSION){
             askToTurnOnLocation(this, methodToInvoke = {
                 map.isMyLocationEnabled = true
+
                 fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
-                            location?.let { currentLocation ->
-                                commonViewModel.lastLocation = currentLocation
-                                val currentCoordinates =
-                                    LatLng(currentLocation.latitude, currentLocation.longitude)
-                               val lastCameraUpdate =
-                                    CameraUpdateFactory.newLatLngZoom(currentCoordinates, zoomLevel)
-                                map.moveCamera(lastCameraUpdate)
-                                map.animateCamera(lastCameraUpdate)
-                            }
+                    location?.let { currentLocation ->
+                        commonViewModel.lastLocation = currentLocation
+                        val currentCoordinates =
+                            LatLng(currentLocation.latitude, currentLocation.longitude)
+                        val lastCameraUpdate =
+                            CameraUpdateFactory.newLatLngZoom(currentCoordinates, zoomLevel)
+                        map.moveCamera(lastCameraUpdate)
+                        map.animateCamera(lastCameraUpdate)
+                    }
                 }
             })
         }
@@ -262,7 +264,7 @@ class SelectLocationFragment : BaseFragment() , OnMapReadyCallback {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
-        if(permissionsAreGranted(this, grantResults,requestCode)){
+        if(permissionsAreGranted(this, grantResults, requestCode)){
             enableMyLocation()
         }else{
             _viewModel.showErrorMessage.value = resources.getString(R.string.location_permission_not_granted)

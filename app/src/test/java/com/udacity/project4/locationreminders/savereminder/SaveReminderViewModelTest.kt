@@ -4,12 +4,14 @@ import android.os.Build
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.android.architecture.blueprints.todoapp.getOrAwaitValue
+import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.locationreminders.MainCoroutineRule
 import com.udacity.project4.locationreminders.data.FakeReminderRepository
 import com.udacity.project4.locationreminders.reminderslist.ReminderDataItem
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
 import org.hamcrest.MatcherAssert
+import org.hamcrest.Matchers.not
 import org.hamcrest.core.Is
 import org.hamcrest.core.IsEqual
 import org.hamcrest.core.IsNot
@@ -25,6 +27,7 @@ import org.koin.core.module.Module
 import org.koin.dsl.module
 import org.koin.test.AutoCloseKoinTest
 import org.koin.test.inject
+import org.mockito.internal.matchers.NotNull
 import org.robolectric.annotation.Config
 
 @ExperimentalCoroutinesApi
@@ -80,23 +83,6 @@ class SaveReminderViewModelTest : AutoCloseKoinTest() {
     }
 
     @Test
-    fun createGeoFencingRequest() {
-
-        val newReminderDataItem = ReminderDataItem(
-            "casual_title",
-            "casual_description",
-            "casual_location",
-            2.0,
-            2.0,
-            "casual_id"
-        )
-
-        saveReminderViewModel.createGeoFenceRequest(newReminderDataItem)
-
-        MatcherAssert.assertThat(saveReminderViewModel.geoFenceToAdd, IsNot(IsNull()))
-    }
-
-    @Test
     fun saveReminder_showLoading() {
         val newReminder = ReminderDataItem("titolo0", "descrizione0", "luogo0", 1.0, 1.0, "0")
 
@@ -126,7 +112,7 @@ class SaveReminderViewModelTest : AutoCloseKoinTest() {
         mainCoroutineRule.pauseDispatcher()
 
         // Then assert that the progress indicator is shown.
-        MatcherAssert.assertThat(saveReminderViewModel.geoFenceReady.getOrAwaitValue(), Is.`is`(false))
+        MatcherAssert.assertThat(saveReminderViewModel.geoFenceReady.getOrAwaitValue(), IsNull())
 
         // Load the task in the view model.
         saveReminderViewModel.createGeoFenceRequest(newReminder)
@@ -136,7 +122,7 @@ class SaveReminderViewModelTest : AutoCloseKoinTest() {
 
         // Then assert that the progress indicator is hidden.
         MatcherAssert.assertThat(
-            saveReminderViewModel.geoFenceReady.getOrAwaitValue(), Is.`is`(true)
+            saveReminderViewModel.geoFenceReady.getOrAwaitValue(), Is.`is`(not(null))
         )
     }
 
@@ -156,5 +142,23 @@ class SaveReminderViewModelTest : AutoCloseKoinTest() {
         mainCoroutineRule.resumeDispatcher()
 
         MatcherAssert.assertThat(saveReminderViewModel.showToast.getOrAwaitValue(),  Is.`is`("Reminder Saved !"))
+    }
+
+    @Test
+    fun  saveReminder_navigateBack() {
+
+        val newReminder = ReminderDataItem("casual_title", "casual_description", "casual_location", 1.0, 1.0, "casual_id")
+
+        // Pause dispatcher so you can verify initial values.
+        mainCoroutineRule.pauseDispatcher()
+
+//        MatcherAssert.assertThat(saveReminderViewModel.showToast.getOrAwaitValue(),  IsNull())
+
+        saveReminderViewModel.saveReminder(newReminder)
+
+        // Execute pending coroutines actions.
+        mainCoroutineRule.resumeDispatcher()
+
+        MatcherAssert.assertThat("same type",saveReminderViewModel.navigationCommand.getOrAwaitValue() is(NavigationCommand.Back))
     }
 }

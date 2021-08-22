@@ -6,16 +6,15 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
-
 import kotlinx.coroutines.ExperimentalCoroutinesApi;
 import kotlinx.coroutines.test.runBlockingTest
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.CoreMatchers.notNullValue
 import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.core.IsNull
 import org.junit.After
 import org.junit.Test
 
@@ -84,6 +83,19 @@ class RemindersDaoTest {
         assertThat(loaded.location, `is`(reminder2.location))
         assertThat(loaded.latitude, `is`(reminder2.latitude))
         assertThat(loaded.longitude, `is`(reminder2.longitude))
+    }
+
+    @Test
+    fun getNull_getReminderByWrongId() = runBlockingTest {
+        // GIVEN - Insert a task.
+        val reminder = ReminderDTO("title", "description", "location",1.0, 1.0, "unique_id")
+        database.reminderDao().saveReminder(reminder)
+
+        // THEN - The loaded data contains the updated values.
+        val loaded = database.reminderDao().getReminderById("another_id")
+
+        assertThat<ReminderDTO>(loaded, IsNull())
+
     }
 
 }

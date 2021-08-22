@@ -105,9 +105,10 @@ class SaveReminderFragment : BaseFragment() {
 
     private fun setObservers() {
         _viewModel.geoFenceReady.observe(viewLifecycleOwner, Observer {
-            if (it) {
-                _viewModel.geoFenceReady.value = false
-                    addGeofence(_viewModel.geoFenceToAdd!!)
+            if (it != null) {
+                val request = _viewModel.geoFenceReady.value!!
+                _viewModel.geoFenceReady.value = null
+                addGeofence(request)
             }
         })
     }
@@ -157,7 +158,15 @@ class SaveReminderFragment : BaseFragment() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
         if(permissionsAreGranted(this, grantResults, requestCode)){
-            _viewModel.geoFenceReady.value = true
+            val title = _viewModel.reminderTitle.value
+            val description = _viewModel.reminderDescription.value
+            val location = _viewModel.reminderSelectedLocationStr.value
+            val latitude = _viewModel.latitude.value
+            val longitude = _viewModel.longitude.value
+
+            reminderDataItem = ReminderDataItem(title, description, location, latitude, longitude)
+
+            _viewModel.createGeoFenceRequest(reminderDataItem)
         }
     }
 

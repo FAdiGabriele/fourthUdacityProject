@@ -90,8 +90,7 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
 
 
     //region savingGeofence
-    val geoFenceReady = MutableLiveData<Boolean>(false)
-    var geoFenceToAdd : GeofencingRequest? = null
+    val geoFenceReady = MutableLiveData<GeofencingRequest>()
 
     fun createGeoFenceRequest(reminderData: ReminderDataItem) {
 
@@ -107,12 +106,11 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
 
         Log.v(Constants.GEOFENCE_TAG, "Created Geofence with id ${geofence.requestId}")
 
-        geoFenceToAdd = GeofencingRequest.Builder()
+        geoFenceReady.value = GeofencingRequest.Builder()
             .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
             .addGeofence(geofence)
             .build()
 
-        geoFenceReady.value = true
     }
     //endregion
 
