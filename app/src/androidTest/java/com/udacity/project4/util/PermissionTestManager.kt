@@ -28,34 +28,19 @@ fun grantPermissionsIfRequested(permissionOption: PermissionOptions) : Boolean {
 
     if (Build.VERSION.SDK_INT >= 23) {
         val textButtonToClick = when{
-            Locale.getDefault().displayLanguage == Locale.ITALIAN.displayLanguage && runningQOrLater && permissionOption == PermissionOptions.FOREGROUND_AND_BACKGROUND  -> {
-                "MENTRE USI L'APP"
-            }
-            Locale.getDefault().displayLanguage == Locale.ITALIAN.displayLanguage && runningQOrLater && permissionOption == PermissionOptions.ONLY_FOREGROUND  -> {
-                "SOLO QUESTA VOLTA"
-            }
-            Locale.getDefault().displayLanguage == Locale.ITALIAN.displayLanguage && runningQOrLater && permissionOption == PermissionOptions.NONE -> {
-                "RIFIUTA"
-            }
-            Locale.getDefault().displayLanguage == Locale.ITALIAN.displayLanguage && runningP && permissionOption != PermissionOptions.ONLY_FOREGROUND-> {
-                "Consenti"
-            }
-            Locale.getDefault().displayLanguage == Locale.ITALIAN.displayLanguage && runningP && permissionOption != PermissionOptions.NONE-> {
-                "Nega"
-            }
-            Locale.getDefault().displayLanguage == Locale.ITALIAN.displayLanguage && runningO_MR1OrEarlier && permissionOption != PermissionOptions.NONE-> {
-                "CONSENTI"
-            }
-            Locale.getDefault().displayLanguage == Locale.ITALIAN.displayLanguage && runningO_MR1OrEarlier && permissionOption == PermissionOptions.NONE-> {
-                "NEGA"
-            }
             runningQOrLater && permissionOption == PermissionOptions.FOREGROUND_AND_BACKGROUND  -> {
-                "While using the app"
+                "Allow all the time"
             }
             runningQOrLater && permissionOption == PermissionOptions.ONLY_FOREGROUND  -> {
-                "Only this time"
+                "Allow only while using the app"
             }
             runningQOrLater && permissionOption == PermissionOptions.NONE  -> {
+                "Deny"
+            }
+            runningP && permissionOption != PermissionOptions.ONLY_FOREGROUND-> {
+                "Allow"
+            }
+            runningP && permissionOption != PermissionOptions.NONE-> {
                 "Deny"
             }
             runningO_MR1OrEarlier && permissionOption == PermissionOptions.NONE  -> {

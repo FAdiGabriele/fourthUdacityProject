@@ -22,7 +22,9 @@ import com.udacity.project4.util.PermissionOptions
 import com.udacity.project4.util.isLocationEnabled
 import com.udacity.project4.util.grantPermissionsIfRequested
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runBlockingTest
 import org.hamcrest.CoreMatchers.not
 import org.junit.*
 import org.junit.runner.RunWith
@@ -159,6 +161,7 @@ class SaveReminderFragmentTest : AutoCloseKoinTest() {
         grantPermissionsIfRequested(PermissionOptions.FOREGROUND_AND_BACKGROUND)
 
         if(isLocationEnabled(fragment.requireContext())){
+            Thread.sleep(1000)
             Mockito.verify(navController).popBackStack()
         }
 
@@ -196,18 +199,27 @@ class SaveReminderFragmentTest : AutoCloseKoinTest() {
         //WHEN click on Fab
         onView(withId(R.id.saveReminder)).perform(click())
 
+        //WHEN we grant permission if requested
         grantPermissionsIfRequested(PermissionOptions.FOREGROUND_AND_BACKGROUND)
 
-        //THEN appears a Toast that warn that geofence is entered
 
         if(isLocationEnabled(fragment.requireContext())){
+            //THEN appears a Toast that warn that geofence is entered
             onView(withText(R.string.geofence_entered))
                 .inRoot(withDecorView(not(fragment.requireActivity().window.decorView)))
                 .check(matches(isDisplayed()))
+
+            Thread.sleep(4000)
+
+            //THEN appears a Toast that warn that reminder is saved
+            onView(withText(R.string.reminder_saved))
+                .inRoot(withDecorView(not(fragment.requireActivity().window.decorView)))
+                .check(matches(isDisplayed()))
         } else {
-        onView(withText(R.string.geofences_not_added))
-            .inRoot(withDecorView(not(fragment.requireActivity().window.decorView)))
-            .check(matches(isDisplayed()))
+            //THEN appears a Toast that warn that geofence is NOT added
+            onView(withText(R.string.geofences_not_added))
+                .inRoot(withDecorView(not(fragment.requireActivity().window.decorView)))
+                .check(matches(isDisplayed()))
         }
     }
 

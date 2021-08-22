@@ -7,6 +7,7 @@ import androidx.test.espresso.Espresso
 import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.action.ViewActions
 import androidx.test.espresso.assertion.ViewAssertions
+import androidx.test.espresso.matcher.RootMatchers
 import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -20,7 +21,10 @@ import com.udacity.project4.locationreminders.reminderslist.RemindersListViewMod
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.util.*
 import com.udacity.project4.utils.EspressoIdlingResource
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runBlockingTest
+import org.hamcrest.CoreMatchers
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -104,7 +108,7 @@ class RemindersActivityTest :
 
 
     @Test
-    fun createOneReminder() {
+    fun createOneReminder() = runBlocking{
         // GIVEN  the activity reminder
         val activityScenario = ActivityScenario.launch(RemindersActivity::class.java)
         dataBindingIdlingResource.monitorActivity(activityScenario)
@@ -126,8 +130,10 @@ class RemindersActivityTest :
 
 
         //THEN It should open the SelectLocationFragment,else the test fail
-        grantPermissionsIfRequested(PermissionOptions.FOREGROUND_AND_BACKGROUND)
-        if(isLocationEnabled(dataBindingIdlingResource.activity)) turnOnPositionIfRequested(LocationsOptions.TURN_ON)
+        //WHEN we give foreground local permissions
+        grantPermissionsIfRequested(PermissionOptions.ONLY_FOREGROUND)
+        //WHEN we accept to turn on the position
+        if(!isLocationEnabled(dataBindingIdlingResource.activity)) turnOnPositionIfRequested(LocationsOptions.TURN_ON)
 
         //THEN checking if is visible map on Layout
         Espresso.onView(withId(R.id.map)).check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
@@ -135,7 +141,8 @@ class RemindersActivityTest :
         Espresso.onView(withId(R.id.map)).perform(ViewActions.click())
 
         //Here we wait for map loading and update the UI
-        Thread.sleep(3000)
+        delay(2000)
+
         //THEN It should appears a button, else the test fail
         Espresso.onView(withId(R.id.button_confirm)).check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
 
@@ -152,11 +159,27 @@ class RemindersActivityTest :
         //WHEN we click on FAB
         Espresso.onView(withId(R.id.saveReminder)).perform(ViewActions.click())
 
+        //WHEN we give also background local permissions
+        grantPermissionsIfRequested(PermissionOptions.FOREGROUND_AND_BACKGROUND)
+
+        //THEN appears a Toast that warn that geofence is entered
+        Espresso.onView(ViewMatchers.withText(R.string.geofence_entered))
+            .inRoot(RootMatchers.withDecorView(CoreMatchers.not(dataBindingIdlingResource.activity.window.decorView)))
+            .check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
+
         //THEN It should open the ReminderListFragment,else the test fail
         //THEN we check if the new reminder is created,  else the test fail
         Espresso.onView(ViewMatchers.withText("NEW TITLE"))
             .check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
         Espresso.onView(ViewMatchers.withText("NEW DESCRIPTION"))
+            .check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
+
+        //Here we wait for the reminder saved Toast
+        delay(4000)
+
+        //THEN appears a Toast that warn that reminder is saved
+        Espresso.onView(ViewMatchers.withText(R.string.reminder_saved))
+            .inRoot(RootMatchers.withDecorView(CoreMatchers.not(dataBindingIdlingResource.activity.window.decorView)))
             .check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
 
         activityScenario.close()

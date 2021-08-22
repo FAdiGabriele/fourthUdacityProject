@@ -18,6 +18,7 @@ import kotlinx.coroutines.async
 import com.udacity.project4.locationreminders.data.dto.Result
 import com.udacity.project4.utils.Constants
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSource) :
@@ -51,8 +52,13 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
                     reminderData.turnInReminderDTO()
             )
             showLoading.value = false
+            //give a little time to Test to see prev toast
+            delay(1000)
             showToast.value = app.getString(R.string.reminder_saved)
             navigationCommand.value = NavigationCommand.Back
+
+
+
         }
     }
 
@@ -84,7 +90,7 @@ class SaveReminderViewModel(val app: Application, val dataSource: ReminderDataSo
 
 
     //region savingGeofence
-    val  geoFenceReady = MutableLiveData<Boolean>()
+    val geoFenceReady = MutableLiveData<Boolean>(false)
     var geoFenceToAdd : GeofencingRequest? = null
 
     fun createGeoFenceRequest(reminderData: ReminderDataItem) {
